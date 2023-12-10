@@ -26,21 +26,39 @@ import java.util.*;
  *
  *
  * ///some features
- * Show doctors, patients, and wards  by Alphabetic order
+ * Show doctors, patients, and wards by Alphabetic order
  * remove by name or unique id
- *  make it ready for next presentation, remove all the previous files and data
+ * make it ready for next presentation, remove all the previous files and data
 
  * */
 
 
 public class Main {
+    static Scanner scanner = new Scanner(System.in);
+    
     final static String DATABASE = "HospitalData";
     static String currentDir = System.getProperty("user.dir");
     final static String databaseFilePath = currentDir + "//" + DATABASE + ".accdb";
+  
+    //Doctors lists
     static ArrayList<String> doctorsNamesList = new ArrayList<String>();
     static ArrayList<String> doctorsWardsList = new ArrayList<String>();
     static ArrayList<Integer> doctorsContactsList = new ArrayList<Integer>();
-    static Scanner scanner = new Scanner(System.in);
+    
+    //Receptionist lists
+    static ArrayList<String> receptionistNamesList = new ArrayList<String>();
+    static ArrayList<Integer> receptionistPaswordList = new ArrayList<Integer>();
+    
+    //Ward lists
+    static ArrayList<String> wardNameList = new ArrayList<String>();
+    //needed to be predecleared since there are only a few type of wards.
+    static ArrayList<String> wardTypeList = new ArrayList<String>();
+    static ArrayList<String> wardTotalBedsList = new ArrayList<String>();
+    static ArrayList<String> wardAvailableBedsList = new ArrayList<String>();
+    static ArrayList<String> wardInUseBedsList = new ArrayList<String>();
+
+
+    
     public static void handleUserInput() {
 
         int choice = scanner.nextInt();
@@ -53,6 +71,7 @@ public class Main {
                 // Navigate to Doctors Portal
                 break;
             case 3:
+                //Navigate to the case statement handelling the admin portal
                 adminPortal();
                 break;
             case 4:
@@ -63,11 +82,24 @@ public class Main {
                 break;
         }
     }
-    public  static void adminPortal(){
+   
+    public static void adminPortal(){
+        int choice = scanner.nextInt();
+        //Making another switch statement for the admin portal. The admin will choose from three options
+        //1-Edit Doctors data 2- Edit Recptionists Data 3- Edit Wards Data
+        System.out.println("1. Edit Doctors Data");
+        System.out.println("2. Edit Receptionists Data");
+        System.out.println("3. Edit Wards Data");
+
+        switch (choice){ 
+
+        case 1:
+        //Edit doctor data    
+       
         System.out.println("1. Add Doctor");
         System.out.println("2. Edit Doctor");
-        int choice = scanner.nextInt();
-        switch (choice) {
+        int choiceDoc = scanner.nextInt();
+        switch (choiceDoc) {
             case 1:
                 System.out.print("Enter Doctor Name: ");
                 String docName = scanner.nextLine();
@@ -82,7 +114,7 @@ public class Main {
 
                 break;
         }
-    }
+    }}
     public static void displayMainMenu() {
         System.out.println("1. Reception Portal");
         System.out.println("2. Doctors Portal");
@@ -128,8 +160,5 @@ public class Main {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        int a = 0;
-        int b = 4;
-        int c = a + b;
     }
 }
