@@ -18,9 +18,6 @@ import java.util.ArrayList;
  * //creating separate files for doctors, receptionists,
  * //Doctor creation method will receive JSON string and each property of doctor will be extracted using regEx or json string parser.
  * // tables can be created using SQL CREATE TABLE query
- *
- *
- *
  * ///some features
  * Show doctors, patients, and wards  by Alphabetic order
  * remove by name or unique id
