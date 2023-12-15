@@ -1,4 +1,8 @@
 package org.pfcolab;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.*;
 import java.lang.*;
 /*
@@ -32,20 +36,42 @@ public class Main {
     static Scanner scanner = new Scanner(System.in);
 
     final static String DATABASE = "HospitalData";
+    final static String DOCTORSFILENAME = "Doctors.txt";
+    final static String RECEPTIONISTSFILENAME = "Receptionists.txt";
+    final static String WARDSFILENAME = "Wards.txt";
+    final static String PATIENTSFILENAME = "Patients.txt";
+    final static String DIAGNOSISFILENAME = "Diagnosis.txt";
+    final static String APPOINTMENTSFILENAME = "Appointments.txt";
+
     //Pasword for admin
     static String savedAdminPassword = "kaleem";
     static String currentDir = System.getProperty("user.dir");
     final static String databaseFilePath = currentDir + "//" + DATABASE + ".accdb";
+    /*
+    * Array lists for the stored data of multiple entries
+    * We are using String array to store the data of one entity
+    * The structure of each Entity is commented before declaration the line
+    * */
 
-    //Array lists for the stored data of multiple entries
+    //['Doc ID', 'Doc Name' , 'Time Start', 'Time End','Ward Name', 'Specialized In', 'Password']
     static ArrayList<String[]> doctorsList = new ArrayList<>();
-    static ArrayList<String[]> receptionitsList = new ArrayList<>();
+
+    //['Recep ID', 'Receptionist Name' , 'Password']
+    static ArrayList<String[]> receptionistsList = new ArrayList<>();
+
+    //['Ward ID', 'Ward Name' , 'Total Beds','Occupied Beds','Type']
     static ArrayList<String[]> wardsList = new ArrayList<>();
+
+    //['Patient ID', 'Patient Name' , 'Gender','Age','Contact']
     static ArrayList<String[]> patientsList = new ArrayList<>();
+
+    //['Diagnosis ID', 'Patient ID' , 'Doctor ID','Prescriptions','Diagnosis','Appointment ID']
     static ArrayList<String[]> diagnosisList = new ArrayList<>();
+
+    //['Appointment ID', 'Patient ID' , 'Doctor ID','Time Start','Time End']
     static ArrayList<String[]> appointmentsList = new ArrayList<>();
 
-
+    static int doctors=0, receptionists=0,wards=0,patients=0,diagnosis=0,appointments=0;
 
     //main function! wow!! ;)
     public static void main(String[] args) {
@@ -113,9 +139,9 @@ public class Main {
         }
     }
 
-    //Now we are making a function for admin login it works only if the user has the correct pasword
+    //Now we are making a function for admin login it works only if the user has the correct password
     //and login Name.
-    static boolean isAdmin(){
+    static boolean isAdminPasswordCorrect(){
 
         System.out.println("Enter your Password: ");
         String enteredAdminPassword = scanner.nextLine();
@@ -129,11 +155,11 @@ public class Main {
 
         //Checking if the password is correct
         int loginTries = 0;
-        while (isAdmin() != true) {
+        while (!isAdminPasswordCorrect()) {
             System.out.println("Wrong Password!");
             loginTries++;
             if (loginTries == 5) {
-                System.out.println("You have entered wrong pasword 5 times, returing to Main Menu");
+                System.out.println("You have entered wrong password 5 times, returning to Main Menu");
                 mainPortal();
             }
         }
@@ -144,12 +170,12 @@ public class Main {
 
         //checking password
         paswordChecker();
-        //diplaying options for admin portal
+        //displaying options for admin portal
         displayOptionsAdminPortal();
-        //inputing user for admin portal options
+        //inputting user for admin portal options
         System.out.print("Enter your choice: ");
         int choiceAdminPortal = scanner.nextInt();
-
+        scanner.nextLine();
         switch (choiceAdminPortal) {
             case 1:
                 System.out.println("You selected: Add Doctors Data");
@@ -217,24 +243,60 @@ public class Main {
     These include add, edit, delete, display all, display specific doctors
     Use with care ;)
      */
+    private static String generateID(String entityType){
+        switch (entityType){
+            case "Doctor":
+                return "DOC-" + String.format("%03d", ++doctors);
+            case "Receptionist":
+                return "REP-" + String.format("%03d", ++receptionists);
+            case "Ward":
+                return "W-" + String.format("%03d", ++wards);
+            case "Patient":
+                return "P-" + String.format("%03d", ++patients);
+            case "Diagnosis":
+                return "DIA-" + String.format("%03d", ++diagnosis);
+            case "Appointment":
+                return "APT-" + String.format("%03d", ++appointments);
+            default:
+                return "";
+        }
+    }
+    public static void storeDoctorToFile(String doctorsData){
+        File file = new File(DOCTORSFILENAME);
+        try{
+            FileWriter fileReaderObject= new FileWriter(file, true);
+            PrintWriter writer= new PrintWriter(fileReaderObject);
+            writer.println(doctorsData);
+        }catch (Exception o){
+            System.out.println("\n There is an Error saving the data to the file.Make sure the file is not opened anywhere.");
+            o.printStackTrace();
+        }
+    }
 
     // Add a new doctor to the database based on user input
     private static void addDoctorFromUserInput(ArrayList<String[]> doctorsList, Scanner scanner) {
         System.out.println("\nEnter details for the new doctor:");
         System.out.print("Enter doctor name: ");
         String name = scanner.nextLine();
-        System.out.print("Enter doctor timing: ");
-        String timing = scanner.nextLine();
-        System.out.print("Enter doctor ward: ");
+        System.out.print("Enter doctor start(e.g 10AM): ");
+        String timingStart = scanner.nextLine();
+        System.out.print("Enter doctor end(e.g 3PM): ");
+        String timingEnd = scanner.nextLine();
+        System.out.print("Enter doctor ward(e.g Cardiology): ");
         String ward = scanner.nextLine();
-        System.out.print("Enter doctor specialty: ");
+        System.out.print("Enter doctor specialty(e.g Cardiologist): ");
         String specialty = scanner.nextLine();
 
+
         // Creating a new array to store doctor details
-        String[] newDoctor = {name, timing, ward, specialty};
+        String[] newDoctor = {generateID("Doctor"),name, timingStart,timingEnd, ward, specialty};
 
         // Adding the new doctor to the ArrayList
         doctorsList.add(newDoctor);
+
+        //Adding the doctor to the file data
+        String docData= Arrays.toString(newDoctor);
+        storeDoctorToFile(docData);
 
         System.out.println("New doctor added successfully.");
     }
@@ -243,39 +305,65 @@ public class Main {
     private static void displayAllDoctors(ArrayList<String[]> doctorsList) {
         System.out.println("\nList of Doctors:");
         for (int i = 0; i < doctorsList.size(); i++) {
-            System.out.println("Doctor ID: " + (i + 1) + ", Doctor Info: " + arrayToString(doctorsList.get(i)));
+            System.out.println("Doctor ID: " + doctorsList.get(i)[0] + ", Doctor Info: " + Arrays.toString(doctorsList.get(i)) );
         }
     }
 
     // View specific doctor details based on user input (by name)
     private static void viewSpecificDoctorDetails(ArrayList<String[]> doctorsList, Scanner scanner) {
-        System.out.print("\nEnter the name of the doctor to view details: ");
-        String doctorNameToView = scanner.nextLine();
+        System.out.println("\n View Specific Doctor Details :");
+        System.out.println("1. by Name ");
+        System.out.println("2. by ID ");
+        System.out.print("Enter your choice: ");
+        int choice= scanner.nextInt();
+        scanner.nextLine();
+        switch (choice){
+            case 1:
+                break;
+            case 2:
+                System.out.print("\nEnter the ID of the doctor to view details: ");
+                String doctorIdToView = scanner.nextLine();
 
-        // Check if the doctor name exists in the database
-        int doctorIndexToView = getDoctorIndexByName(doctorsList, doctorNameToView);
+                // Check if the doctor ID exists in the database
+                int doctorIndexToView = getDoctorIndexById(doctorsList, doctorIdToView);
 
-        if (doctorIndexToView != -1) {
-            // View the details of the specific doctor
-            String[] doctorDetails = doctorsList.get(doctorIndexToView);
-            System.out.println("Details of Doctor '" + doctorNameToView + "': " + arrayToString(doctorDetails));
-        } else {
-            System.out.println("Doctor with name '" + doctorNameToView + "' not found in the database.");
+                if (doctorIndexToView != -1) {
+                    // View the details of the specific doctor
+                    String[] doctorDetails = doctorsList.get(doctorIndexToView);
+                    System.out.println("Details of Doctor '" + doctorIdToView + "': " + Arrays.toString(doctorDetails));
+                } else {
+                    System.out.println("Doctor with ID '" + doctorIdToView + "' not found in the database.");
+                }
+                break;
+            default:
+                System.out.println("Invalid choice. ");
+
         }
+
+    }
+
+    // Get the index of a doctor by ID
+    private static int getDoctorIndexById(ArrayList<String[]> doctorsList, String id) {
+        for (int i = 0; i < doctorsList.size(); i++) {
+            if (id.equals(doctorsList.get(i)[0])) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     // Edit details of a doctor based on user input (by name)
     private static void editDoctorDetails(ArrayList<String[]> doctorsList, Scanner scanner) {
-        System.out.print("\nEnter the name of the doctor to edit details: ");
-        String doctorNameToEdit = scanner.nextLine();
+        System.out.print("\nEnter the ID of the doctor to edit details: ");
+        String doctorIdToEdit = scanner.nextLine();
 
-        // Check if the doctor name exists in the database
-        int doctorIndexToEdit = getDoctorIndexByName(doctorsList, doctorNameToEdit);
+        // Check if the doctor ID exists in the database
+        int doctorIndexToEdit = getDoctorIndexById(doctorsList, doctorIdToEdit);
 
         if (doctorIndexToEdit != -1) {
             // Edit the details of the specific doctor
             String[] doctorDetails = doctorsList.get(doctorIndexToEdit);
-            System.out.println("Current Details of Doctor '" + doctorNameToEdit + "': " + arrayToString(doctorDetails));
+            System.out.println("Current Details of Doctor '" + doctorIndexToEdit + "': " + Arrays.toString(doctorDetails));
 
             System.out.println("\nSelect the option to edit:");
             System.out.println("1. Edit Timing");
@@ -305,11 +393,13 @@ public class Main {
                     System.out.println("Invalid edit choice. No changes made.");
             }
 
-            System.out.println("Details of Doctor '" + doctorNameToEdit + "' after edit: " + arrayToString(doctorDetails));
-        } else {
-            System.out.println("Doctor with name '" + doctorNameToEdit + "' not found in the database.");
+            System.out.println("Details of Doctor '" + doctorIndexToEdit + "' after edit: " + Arrays.toString(doctorDetails));
+        } else
+        {
+            System.out.println("Doctor with name '" + doctorIndexToEdit + "' not found in the database.");
         }
     }
+
 
     // Delete a doctor from the database based on user input (by name)
     private static void deleteDoctorByNameFromUserInput(ArrayList<String[]> doctorsList, Scanner scanner) {
@@ -346,24 +436,13 @@ public class Main {
     // Get the index of a doctor by name
     private static int getDoctorIndexByName(ArrayList<String[]> doctorsList, String name) {
         for (int i = 0; i < doctorsList.size(); i++) {
-            if (name.equals(doctorsList.get(i)[0])) {
+            if (name.equals(doctorsList.get(i)[1])) {
                 return i;
             }
         }
         return -1;
     }
 
-    // Helper method to convert an array to a string
-    private static String arrayToString(String[] array) {
-        StringBuilder result = new StringBuilder("[");
-        for (int i = 0; i < array.length; i++) {
-            result.append(array[i]);
-            if (i < array.length - 1) {
-                result.append(", ");
-            }
-        }
-        result.append("]");
-        return result.toString();
-    }
+
 
 }
