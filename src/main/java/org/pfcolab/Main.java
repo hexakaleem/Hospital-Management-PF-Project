@@ -519,27 +519,27 @@ public class Main {
         switch (entityType) {
             case "Doctor":
                 numberOfEntitiesArray[0] += 1;
-                updateDatabaseFile("VariablesArray");
+                updateDatabaseFile("Doctor");
                 return "DOC-" + String.format("%03d", numberOfEntitiesArray[0]);
             case "Receptionist":
                 numberOfEntitiesArray[1] += 1;
-                updateDatabaseFile("VariablesArray");
+                updateDatabaseFile("Receptionist");
                 return "REP-" + String.format("%03d", numberOfEntitiesArray[1]);
             case "Ward":
                 numberOfEntitiesArray[2] += 1;
-                updateDatabaseFile("VariablesArray");
+                updateDatabaseFile("Ward");
                 return "W-" + String.format("%03d", numberOfEntitiesArray[2]);
             case "Patient":
                 numberOfEntitiesArray[3] += 1;
-                updateDatabaseFile("VariablesArray");
+                updateDatabaseFile("Patient");
                 return "P-" + String.format("%03d", numberOfEntitiesArray[3]);
             case "Diagnosis":
                 numberOfEntitiesArray[4] += 1;
-                updateDatabaseFile("VariablesArray");
+                updateDatabaseFile("Diagnosis");
                 return "DIA-" + String.format("%03d", numberOfEntitiesArray[4]);
             case "Appointment":
                 numberOfEntitiesArray[5] += 1;
-                updateDatabaseFile("VariablesArray");
+                updateDatabaseFile("Appointment");
                 return "APT-" + String.format("%03d", numberOfEntitiesArray[5]);
             default:
                 return "";
