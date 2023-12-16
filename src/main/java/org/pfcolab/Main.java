@@ -1,8 +1,7 @@
 package org.pfcolab;
 
 import java.io.*;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.*; 
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
@@ -230,31 +229,7 @@ public class Main {
 
     }
 
-    private static void addDummyDiagnosis() {
-        String diagnosisID = generateID("Diagnosis");
-        String patientID = generateID("Patient");
-        String doctorID = generateID("Doctor");
-        String prescriptions = "Prescription" + RandomStringUtils.randomNumeric(2);
-        String diagnosis = "Diagnosis" + RandomStringUtils.randomNumeric(2);
-        String appointmentID = generateID("Appointment");
-
-        String[] dummyDiagnosis = { diagnosisID, patientID, doctorID, prescriptions, diagnosis, appointmentID };
-        diagnosisList.add(dummyDiagnosis);
-
-    }
-
-    private static void addDummyAppointment() {
-        String appointmentID = generateID("Appointment");
-        String patientID = generateID("Patient");
-        String doctorID = generateID("Doctor");
-        String timeStart = RandomStringUtils.randomNumeric(1) + "AM";
-        String timeEnd = RandomStringUtils.randomNumeric(1) + "PM";
-
-        String[] dummyAppointment = { appointmentID, patientID, doctorID, timeStart, timeEnd };
-        appointmentsList.add(dummyAppointment);
-
-    }
-
+  
     // Add similar functions for other entities (8 more for each entity)
 
     private static void createEmptyFakeFiles() {
@@ -263,8 +238,7 @@ public class Main {
             addDummyReceptionist();
             addDummyWard();
             addDummyPatient();
-            addDummyDiagnosis();
-            addDummyAppointment();
+            
         }
         updateDatabaseFile(DOCTORS_FILENAME, doctorsList);
         updateDatabaseFile(APPOINTMENTS_FILE_NAME, appointmentsList);
@@ -272,6 +246,7 @@ public class Main {
         updateDatabaseFile(PATIENTS_FILE_NAME, patientsList);
         updateDatabaseFile(WARDS_FILE_NAME, wardsList);
         updateDatabaseFile(RECEPTIONISTS_FILE_NAME, receptionistsList);
+        updateDatabaseFile("VariablesArray");
     }
 
     // here all the files will be checked, if the system in running for the first
@@ -281,12 +256,14 @@ public class Main {
             System.out.println(
                     "The system is running for the first time!! . You are required to setup the admin Password");
             createEmptySystemVariablesFile();
-            createEmptyFakeFiles();
+            
             String pass;
             do {
                 System.out.print("Enter Password:");
                 pass = scanner.nextLine();
             } while (!setAdminPassword(pass));
+            createEmptyFakeFiles();
+            updateDatabaseFile("VariablesArray");
         }
     }
 
