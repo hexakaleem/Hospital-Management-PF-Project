@@ -1,4 +1,5 @@
 package org.pfcolab;
+
 import java.io.*;
 import java.util.*;
 import java.lang.*;
@@ -32,7 +33,7 @@ public class Main {
 
     static Scanner scanner = new Scanner(System.in);
 
-    //Different files for different entity data and their path stored in variables
+    // Different files for different entity data and their path stored in variables
     final static String DATABASE = "HospitalData";
     final static String DOCTORS_FILENAME = "Doctors.txt";
     static File doctorDataFilePath = new File(DOCTORS_FILENAME);
@@ -49,54 +50,55 @@ public class Main {
     final static String NUMBER_OF_ENTITIES_FILE_NAME = "NumberofEntities.txt";
     static File entityDataFilePath = new File(NUMBER_OF_ENTITIES_FILE_NAME);
 
-    //Password for admin
+    // Password for admin
     static String savedAdminPassword = "kaleem";
     static String currentDir = System.getProperty("user.dir");
     final static String databaseFilePath = currentDir + "//" + DATABASE + ".accdb";
 
-//--------------------------------------------------------------------------------------------------------------------//
+    // --------------------------------------------------------------------------------------------------------------------//
     /*
-    * Array lists for the stored data of multiple entries
-    * We are using String array to store the data of one entity
-    * The structure of each Entity is commented before declaration the line
+     * Array lists for the stored data of multiple entries
+     * We are using String array to store the data of one entity
+     * The structure of each Entity is commented before declaration the line
      */
 
-
-
-    //['Doc ID', 'Doc Name' , 'Time Start', 'Time End', 'Ward Name', 'Specialized In']
+    // ['Doc ID', 'Doc Name' , 'Time Start', 'Time End', 'Ward Name', 'Specialized
+    // In']
     static ArrayList<String[]> doctorsList = new ArrayList<>();
 
-    //['Recep ID', 'Receptionist Name' , 'Password']
+    // ['Recep ID', 'Receptionist Name' , 'Password']
     static ArrayList<String[]> receptionistsList = new ArrayList<>();
 
-    //['Ward ID', 'Ward Name' , 'Total Beds','Occupied Beds','Type']
+    // ['Ward ID', 'Ward Name' , 'Total Beds','Occupied Beds','Type']
     static ArrayList<String[]> wardsList = new ArrayList<>();
 
-    //['Patient ID', 'Patient Name' , 'Gender','Age','Contact']
+    // ['Patient ID', 'Patient Name' , 'Gender','Age','Contact']
     static ArrayList<String[]> patientsList = new ArrayList<>();
 
-    //['Diagnosis ID', 'Patient ID' , 'Doctor ID','Prescriptions','Diagnosis','Appointment ID']
+    // ['Diagnosis ID', 'Patient ID' , 'Doctor
+    // ID','Prescriptions','Diagnosis','Appointment ID']
     static ArrayList<String[]> diagnosisList = new ArrayList<>();
 
-    //['Appointment ID', 'Patient ID' , 'Doctor ID','Time Start','Time End']
+    // ['Appointment ID', 'Patient ID' , 'Doctor ID','Time Start','Time End']
     static ArrayList<String[]> appointmentsList = new ArrayList<>();
 
-    static int numberOfDoctors,numberOfReceptionists,numberOfWards,numberOfPatients,numberOfDiagnosis,numberOfAppointments;
-    static int[] numberOfEntitiesArray = {numberOfDoctors, numberOfReceptionists, numberOfWards, numberOfPatients,
-            numberOfDiagnosis, numberOfAppointments};
+    static int numberOfDoctors, numberOfReceptionists, numberOfWards, numberOfPatients, numberOfDiagnosis,
+            numberOfAppointments;
+    static int[] numberOfEntitiesArray = { numberOfDoctors, numberOfReceptionists, numberOfWards, numberOfPatients,
+            numberOfDiagnosis, numberOfAppointments };
 
-//--------------------------------------------------------------------------------------------------------------------//
+    // --------------------------------------------------------------------------------------------------------------------//
 
-    //main function! wow!! ;)
+    // main function! wow!! ;)
     public static void main(String[] args) {
-        //Reading all the data after the program boots
+        // Reading all the data after the program boots
         mainDataReader();
-        //opening the main portal
+        // opening the main portal
         mainPortal();
 
     }
 
-    //function to display options of the main portal
+    // function to display options of the main portal
     static void displayOptionsMainPortal() {
         System.out.println("\n=== Menu ===");
         System.out.println("1. Navigate to Admin Portal ");
@@ -106,160 +108,171 @@ public class Main {
         System.out.print("Enter your choice: ");
     }
 
-    //function to display options of the admin portal
+    // function to display options of the admin portal
     static void displayOptionsAdminPortal() {
         System.out.println("\n=== Admin Portal Menu ===");
-        System.out.printf("%-2s %-24s\t%-2s %-24s\t%-2s %-24s\t%-2s %-24s\n", "1", "Add Doctors Data", "6", "Add Receptionists", "10", "Add Ward", "14", "Return to Main Menu");
-        System.out.printf("%-2s %-24s\t%-2s %-24s\t%-2s %-24s\n", "2", "Edit Doctors Data", "7", "Edit Receptionists", "11", "Edit Wards");
-        System.out.printf("%-2s %-24s\t%-2s %-24s\t%-2s %-24s\n", "3", "Delete Doctors Data", "8", "Delete Receptionists", "12", "Delete Wards");
-        System.out.printf("%-2s %-24s\t%-2s %-24s\t%-2s %-24s\n", "4", "Display all Doctors", "9", "Display Receptions", "13", "Display Wards");
+        System.out.printf("%-2s %-24s\t%-2s %-24s\t%-2s %-24s\t%-2s %-24s\n", "1", "Add Doctors Data", "6",
+                "Add Receptionists", "10", "Add Ward", "14", "Return to Main Menu");
+        System.out.printf("%-2s %-24s\t%-2s %-24s\t%-2s %-24s\n", "2", "Edit Doctors Data", "7", "Edit Receptionists",
+                "11", "Edit Wards");
+        System.out.printf("%-2s %-24s\t%-2s %-24s\t%-2s %-24s\n", "3", "Delete Doctors Data", "8",
+                "Delete Receptionists", "12", "Delete Wards");
+        System.out.printf("%-2s %-24s\t%-2s %-24s\t%-2s %-24s\n", "4", "Display all Doctors", "9", "Display Receptions",
+                "13", "Display Wards");
         System.out.printf("%-2s %-24s\t\n", "5", "Display Specific Doctor");
     }
 
-
-    //main portal to ask the user to be directed to.
+    // main portal to ask the user to be directed to.
     public static void mainPortal() {
-        displayOptionsMainPortal();
-        int choice = scanner.nextInt();
-        scanner.nextLine();
-        switch (choice) {
-            case 1:
-                // Navigate to Admin Portal
-                adminPortal();
-                break;
-            case 2:
-                // Navigate to Doctors Portal
-                break;
-            case 3:
-                // Navigate to the case statement handling the receptionist portal
-                break;
-            case 4:
-                // Exit the system
-                break;
-            default:
-                System.out.println("Invalid choice. Please try again.");
-                break;
+        boolean flag = true;
+        while (flag) {
+            displayOptionsMainPortal();
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+            switch (choice) {
+                case 1:
+                    // Navigate to Admin Portal
+                    adminPortal();
+                    break;
+                case 2:
+                    // Navigate to Doctors Portal
+                    break;
+                case 3:
+                    // Navigate to the case statement handling the receptionist portal
+                    break;
+                case 4:
+                    flag = false;
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+                    break;
+            }
         }
     }
 
-    //Now we are making a function for admin login it works only if the user has the correct password
-    //and login Name.
+    // Now we are making a function for admin login it works only if the user has
+    // the correct password
+    // and login Name.
     static boolean isAdminPasswordCorrect() {
         System.out.println("Enter your Password: ");
-        String enteredAdminPassword = scanner.nextLine();
-        System.out.println(enteredAdminPassword);
-        System.out.println(savedAdminPassword);
+        String enteredAdminPassword = scanner.nextLine(); 
         return enteredAdminPassword.equals(savedAdminPassword);
     }
 
-    public static void passwordChecker() {
+    public static boolean passwordChecker() {
         // Checking if the password is correct
-        int loginTries = 0;
+        int loginTries = 1;
         while (!isAdminPasswordCorrect()) {
-            System.out.println("Wrong Password!");
-            loginTries++;
+            System.out.println("Wrong Password! " + (5 - loginTries) + " tries left.");
+           
             if (loginTries == 5) {
-                System.out.println("You have entered the wrong password 5 times, returning to Main Menu");
-                mainPortal();
-                return; // Exit the method to avoid the unnecessary check below
+                System.out.println("You have entered the wrong password "+loginTries+" times, returning to Main Menu");
+
+                return false; // Exit the method to avoid the unnecessary check below
             }
+             loginTries++;
+
         }
 
         // This code is reached only if the password is correct
         System.out.println("Password is Correct");
+        return true;
     }
 
-    //This is the admin portal. It has the ability to add and remove doctors, receptionists and wards
+    // This is the admin portal. It has the ability to add and remove doctors,
+    // receptionists and wards
     public static void adminPortal() {
 
-        passwordChecker();
-        boolean exit = false;
-        while (!exit)
-        {
-            //displaying options for admin portal
-            displayOptionsAdminPortal();
-            //inputting user for admin portal options
-            System.out.print("Enter your choice: ");
-            int choiceAdminPortal = scanner.nextInt();
-            scanner.nextLine();
-            switch (choiceAdminPortal) {
-                case 1:
-                    System.out.println("You selected: Add Doctors Data");
-                    // Add your logic for this option
-                    addDoctorFromUserInput(doctorsList, scanner);
-                    break;
-                case 2:
-                    System.out.println("You selected: Edit Doctors Data");
-                    // Add your logic for this option
-                    break;
-                case 3:
-                    System.out.println("You selected: Delete Doctors Data");
-                    // Add your logic for this option
-                    break;
-                case 4:
-                    System.out.println("You selected: Display all Doctors");
-                    displayAllDoctors(doctorsList);
-                    break;
-                case 5:
-                    System.out.println("You selected: Display Specific Doctor's Data");
-                    // Add your logic for this option
-                    break;
-                case 6:
-                    System.out.println("You selected: Add Receptionists");
-                    // Add your logic for this option
-                    break;
-                case 7:
-                    System.out.println("You selected: Edit Receptionists");
-                    // Add your logic for this option
-                    break;
-                case 8:
-                    System.out.println("You selected: Delete Receptionists");
-                    // Add your logic for this option
-                    break;
-                case 9:
-                    System.out.println("You selected: Display Receptions");
-                    // Add your logic for this option
-                    break;
-                case 10:
-                    System.out.println("You selected: Add Ward");
-                    // Add your logic for this option
-                    break;
-                case 11:
-                    System.out.println("You selected: Edit Wards");
-                    // Add your logic for this option
-                    break;
-                case 12:
-                    System.out.println("You selected: Delete Wards");
-                    // Add your logic for this option
-                    break;
-                case 13:
-                    System.out.println("You selected: Display Wards");
-                    // Add your logic for this option
-                    break;
-                case 14:
-                    System.out.println("You selected: Return to Main Menu");
-                    mainPortal();
-                    exit = true;
-                    break;
-                default:
-                    System.out.println("Invalid choice");
+        if (passwordChecker()) {
+            boolean exit = false;
+            while (!exit) {
+                // displaying options for admin portal
+                displayOptionsAdminPortal();
+                // inputting user for admin portal options
+                System.out.print("Enter your choice: ");
+                int choiceAdminPortal = scanner.nextInt();
+                scanner.nextLine();
+                switch (choiceAdminPortal) {
+                    case 1:
+                        System.out.println("You selected: Add Doctors Data");
+                        // Add your logic for this option
+                        addDoctorFromUserInput(doctorsList, scanner);
+                        break;
+                    case 2:
+                        System.out.println("You selected: Edit Doctors Data");
+                        // Add your logic for this option
+                        break;
+                    case 3:
+                        System.out.println("You selected: Delete Doctors Data");
+                        // Add your logic for this option
+                        break;
+                    case 4:
+                        System.out.println("You selected: Display all Doctors");
+                        displayAllDoctors(doctorsList);
+                        break;
+                    case 5:
+                        System.out.println("You selected: Display Specific Doctor's Data");
+                        // Add your logic for this option
+                        break;
+                    case 6:
+                        System.out.println("You selected: Add Receptionists");
+                        // Add your logic for this option
+                        break;
+                    case 7:
+                        System.out.println("You selected: Edit Receptionists");
+                        // Add your logic for this option
+                        break;
+                    case 8:
+                        System.out.println("You selected: Delete Receptionists");
+                        // Add your logic for this option
+                        break;
+                    case 9:
+                        System.out.println("You selected: Display Receptions");
+                        // Add your logic for this option
+                        break;
+                    case 10:
+                        System.out.println("You selected: Add Ward");
+                        // Add your logic for this option
+                        break;
+                    case 11:
+                        System.out.println("You selected: Edit Wards");
+                        // Add your logic for this option
+                        break;
+                    case 12:
+                        System.out.println("You selected: Delete Wards");
+                        // Add your logic for this option
+                        break;
+                    case 13:
+                        System.out.println("You selected: Display Wards");
+                        // Add your logic for this option
+                        break;
+                    case 14:
+                        System.out.println("You selected: Return to Main Menu");
+                         
+                        exit = true;
+                        break;
+                    default:
+                        System.out.println("Invalid choice");
+                }
             }
         }
     }
 
-    /* Functions to Generate ID are below:
-    * These include checking if a file for Entity Numbers exits and adding initial 0 values in a newly created file
-    * Reading the file and writing values back in it
-    */
+    /*
+     * Functions to Generate ID are below:
+     * These include checking if a file for Entity Numbers exits and adding initial
+     * 0 values in a newly created file
+     * Reading the file and writing values back in it
+     */
 
-    //checking if entity file is created, if not, then it is created with initial values staring from 0
+    // checking if entity file is created, if not, then it is created with initial
+    // values staring from 0
     public static void entityFileCreator() {
 
         try {
 
             // Check if the file doesn't exist, create it
-            if (!entityDataFilePath.exists())
-            {
+            if (!entityDataFilePath.exists()) {
                 entityDataFilePath.createNewFile();
                 FileOutputStream fos = new FileOutputStream(entityDataFilePath, false);
                 PrintStream ps = new PrintStream(fos);
@@ -269,9 +282,11 @@ public class Main {
                     ps.println(0);
                 }
                 ps.close();
-                //new file is created with initial 0 values so that there is no conflict when reading
-                //initially, although it will not be used because the database will be initialized,
-                //I made it because I felt like it otherwise the system won't be complete.
+                // new file is created with initial 0 values so that there is no conflict when
+                // reading
+                // initially, although it will not be used because the database will be
+                // initialized,
+                // I made it because I felt like it otherwise the system won't be complete.
             }
 
         } catch (IOException e) {
@@ -279,14 +294,17 @@ public class Main {
         }
     }
 
-    // Function reads the number of entities present in the files updating their values in numberOfEntitiesArray[i]
+    // Function reads the number of entities present in the files updating their
+    // values in numberOfEntitiesArray[i]
     public static void entityReaderFromFile() {
         try {
             // Check if the file doesn't exist, create it and initialize 0 values
             entityFileCreator();
             Scanner in = new Scanner(entityDataFilePath);
-            // Taking the values of the number of stored entities from the Number-of-Entities file
-            // numberOfEntitiesArray[] = [doctors, receptionists, wards, patients, diagnosis, appointments]
+            // Taking the values of the number of stored entities from the
+            // Number-of-Entities file
+            // numberOfEntitiesArray[] = [doctors, receptionists, wards, patients,
+            // diagnosis, appointments]
             // Using a for loop to make it input values from the text file
             for (int i = 0; i < 6; i++) {
                 numberOfEntitiesArray[i] = in.nextInt();
@@ -297,7 +315,8 @@ public class Main {
         }
     }
 
-    // This function will update the number of Entities after they have been updated during
+    // This function will update the number of Entities after they have been updated
+    // during
     // new entity ID creating, which occurs when a new Entity is created.
     public static void entityUpdaterToFile() {
 
@@ -320,27 +339,27 @@ public class Main {
         entityReaderFromFile();
         switch (entityType) {
             case "Doctor":
-                numberOfEntitiesArray[0]+=1;
+                numberOfEntitiesArray[0] += 1;
                 entityUpdaterToFile();
                 return "DOC-" + String.format("%03d", numberOfEntitiesArray[0]);
             case "Receptionist":
-                numberOfEntitiesArray[1]+=1;
+                numberOfEntitiesArray[1] += 1;
                 entityUpdaterToFile();
                 return "REP-" + String.format("%03d", numberOfEntitiesArray[1]);
             case "Ward":
-                numberOfEntitiesArray[2]+=1;
+                numberOfEntitiesArray[2] += 1;
                 entityUpdaterToFile();
                 return "W-" + String.format("%03d", numberOfEntitiesArray[2]);
             case "Patient":
-                numberOfEntitiesArray[3]+=1;
+                numberOfEntitiesArray[3] += 1;
                 entityUpdaterToFile();
                 return "P-" + String.format("%03d", numberOfEntitiesArray[3]);
             case "Diagnosis":
-                numberOfEntitiesArray[4]+=1;
+                numberOfEntitiesArray[4] += 1;
                 entityUpdaterToFile();
                 return "DIA-" + String.format("%03d", numberOfEntitiesArray[4]);
             case "Appointment":
-                numberOfEntitiesArray[5]+=1;
+                numberOfEntitiesArray[5] += 1;
                 entityUpdaterToFile();
                 return "APT-" + String.format("%03d", numberOfEntitiesArray[5]);
             default:
@@ -348,18 +367,23 @@ public class Main {
         }
     }
 
-//--------------------------------------------------------------------------------------------------------------------//
-    /* Functions to Read Data into their corresponding ArrayLists are below:
-     * These include functions for Doctor Data, Receptionist Data, Ward Data, Patient Data, Diagnosis Data,
+    // --------------------------------------------------------------------------------------------------------------------//
+    /*
+     * Functions to Read Data into their corresponding ArrayLists are below:
+     * These include functions for Doctor Data, Receptionist Data, Ward Data,
+     * Patient Data, Diagnosis Data,
      * Appointment Data.
-     * These are all then connected to a main Data Storage Function mainDataReader();
+     * These are all then connected to a main Data Storage Function
+     * mainDataReader();
      */
 
-    //1-Doctor Data, 2-Receptionist Data, 3-Ward Data, 4-Patient Data, 5-Diagnosis Data, 6-Appointment Data.
-    //Main Data reader menu containing all the functions for other readers
-    //Changing mainDataReader to read all data once the program boots
+    // 1-Doctor Data, 2-Receptionist Data, 3-Ward Data, 4-Patient Data, 5-Diagnosis
+    // Data, 6-Appointment Data.
+    // Main Data reader menu containing all the functions for other readers
+    // Changing mainDataReader to read all data once the program boots
     public static void mainDataReader() {
-    //For now keeping dataNumber<=1 because we have not made other txt files database
+        // For now keeping dataNumber<=1 because we have not made other txt files
+        // database
         for (int dataNumber = 1; dataNumber <= 1; dataNumber++) {
 
             switch (dataNumber) {
@@ -393,9 +417,9 @@ public class Main {
         }
     }
 
-
-    //Function to read doctor data from the file containing all the doctors
-    //['Doc ID', 'Doc Name' , 'Time Start', 'Time End', 'Ward Name', 'Specialized In']
+    // Function to read doctor data from the file containing all the doctors
+    // ['Doc ID', 'Doc Name' , 'Time Start', 'Time End', 'Ward Name', 'Specialized
+    // In']
     public static void readDoctorsDataToArrayList() {
 
         try {
@@ -412,8 +436,8 @@ public class Main {
         }
     }
 
-    //Reading Receptionist data into array list
-    //['Recep ID', 'Receptionist Name' , 'Password']
+    // Reading Receptionist data into array list
+    // ['Recep ID', 'Receptionist Name' , 'Password']
     public static void readReceptionistsDataToArrayList() {
         try {
             Scanner reading = new Scanner(receptionistDataFilePath);
@@ -428,7 +452,7 @@ public class Main {
         }
     }
 
-    //['Ward ID', 'Ward Name' , 'Total Beds','Occupied Beds','Type']
+    // ['Ward ID', 'Ward Name' , 'Total Beds','Occupied Beds','Type']
     public static void readWardsDataToArrayList() {
         try {
             Scanner reading = new Scanner(wardDataFilePath);
@@ -442,7 +466,7 @@ public class Main {
         }
     }
 
-    //['Patient ID', 'Patient Name' , 'Gender','Age','Contact']
+    // ['Patient ID', 'Patient Name' , 'Gender','Age','Contact']
     public static void readPatientsDataToArrayList() {
         try {
             Scanner reading = new Scanner(patientDataFilePath);
@@ -456,7 +480,8 @@ public class Main {
         }
     }
 
-    //['Diagnosis ID', 'Patient ID' , 'Doctor ID','Prescriptions','Diagnosis','Appointment ID']
+    // ['Diagnosis ID', 'Patient ID' , 'Doctor
+    // ID','Prescriptions','Diagnosis','Appointment ID']
     public static void readDiagnosisDataToArrayList() {
         try {
             Scanner reading = new Scanner(diagnosisDataFilePath);
@@ -470,7 +495,7 @@ public class Main {
         }
     }
 
-    //['Appointment ID', 'Patient ID' , 'Doctor ID','Time Start','Time End']
+    // ['Appointment ID', 'Patient ID' , 'Doctor ID','Time Start','Time End']
     public static void readAppointmentsDataToArrayList() {
         try {
             Scanner reading = new Scanner(appointmentsDataFilePath);
@@ -484,30 +509,35 @@ public class Main {
         }
     }
 
+    // --------------------------------------------------------------------------------------------------------------------//
 
-//--------------------------------------------------------------------------------------------------------------------//
-
-    /* Functions to write Data into their corresponding txt files are below:
-     * These include functions for Doctor Data, Receptionist Data, Ward Data, Patient Data, Diagnosis Data,
+    /*
+     * Functions to write Data into their corresponding txt files are below:
+     * These include functions for Doctor Data, Receptionist Data, Ward Data,
+     * Patient Data, Diagnosis Data,
      * Appointment Data.
-     * These are all then connected to a main Data Storage Function mainDataWriter();
+     * These are all then connected to a main Data Storage Function
+     * mainDataWriter();
      */
 
-    //Store the doctor data to the txt file
+    // Store the doctor data to the txt file
     public static void storeDoctorToFile(String doctorsData) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(doctorDataFilePath, true))) {
             writer.println(doctorsData);
         } catch (Exception e) {
-            System.out.println("\nThere is an error saving the data to the file. Make sure the file is not opened anywhere.");
+            System.out.println(
+                    "\nThere is an error saving the data to the file. Make sure the file is not opened anywhere.");
             e.printStackTrace();
         }
     }
 
-    //Rest functions to be added...
+    // Rest functions to be added...
 
-//--------------------------------------------------------------------------------------------------------------------//
+    // --------------------------------------------------------------------------------------------------------------------//
 
-    /* Functions to manipulate doctor to the array (which are then updated to the database txt file) are below:
+    /*
+     * Functions to manipulate doctor to the array (which are then updated to the
+     * database txt file) are below:
      * These include add, edit, delete, display all, display specific doctors
      * Use with care ;)
      */
@@ -526,18 +556,20 @@ public class Main {
         System.out.print("Enter doctor specialty(e.g Cardiologist): ");
         String specialty = scanner.nextLine();
 
-
         // Creating a new array to store doctor details
-        String[] newDoctor = {generateID("Doctor"),name, timingStart,timingEnd, ward, specialty};
+        String[] newDoctor = { generateID("Doctor"), name, timingStart, timingEnd, ward, specialty };
 
         // Adding the new doctor to the ArrayList
-        //Although I think since we are reading data from the txt file, adding to ArrayList would be pointless since
-        //it will be overwritten every time from the adminPortal() function when a new doctor is added
-        //One thing we can do is only read once at the start of program instead of reading everytime??
+        // Although I think since we are reading data from the txt file, adding to
+        // ArrayList would be pointless since
+        // it will be overwritten every time from the adminPortal() function when a new
+        // doctor is added
+        // One thing we can do is only read once at the start of program instead of
+        // reading everytime??
         doctorsList.add(newDoctor);
 
-        //Adding the doctor to the file data
-        String docData= Arrays.toString(newDoctor);
+        // Adding the doctor to the file data
+        String docData = Arrays.toString(newDoctor);
         storeDoctorToFile(docData);
         System.out.println("New doctor added successfully.");
     }
@@ -557,9 +589,9 @@ public class Main {
         System.out.println("1. by Name ");
         System.out.println("2. by ID ");
         System.out.print("Enter your choice: ");
-        int choice= scanner.nextInt();
+        int choice = scanner.nextInt();
         scanner.nextLine();
-        switch (choice){
+        switch (choice) {
             case 1:
                 break;
             case 2:
@@ -605,7 +637,8 @@ public class Main {
         if (doctorIndexToEdit != -1) {
             // Edit the details of the specific doctor
             String[] doctorDetails = doctorsList.get(doctorIndexToEdit);
-            System.out.println("Current Details of Doctor '" + doctorIndexToEdit + "': " + Arrays.toString(doctorDetails));
+            System.out.println(
+                    "Current Details of Doctor '" + doctorIndexToEdit + "': " + Arrays.toString(doctorDetails));
 
             System.out.println("\nSelect the option to edit:");
             System.out.println("1. Edit Timing");
@@ -635,13 +668,12 @@ public class Main {
                     System.out.println("Invalid edit choice. No changes made.");
             }
 
-            System.out.println("Details of Doctor '" + doctorIndexToEdit + "' after edit: " + Arrays.toString(doctorDetails));
-        } else
-        {
+            System.out.println(
+                    "Details of Doctor '" + doctorIndexToEdit + "' after edit: " + Arrays.toString(doctorDetails));
+        } else {
             System.out.println("Doctor with name '" + doctorIndexToEdit + "' not found in the database.");
         }
     }
-
 
     // Delete a doctor from the database based on user input (by name)
     private static void deleteDoctorByNameFromUserInput(ArrayList<String[]> doctorsList, Scanner scanner) {
@@ -684,6 +716,5 @@ public class Main {
         }
         return -1;
     }
-
 
 }
