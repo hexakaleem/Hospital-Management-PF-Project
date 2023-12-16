@@ -291,6 +291,15 @@ public class Main {
         System.out.printf("%-2s %-24s\t\n", "5", "Display Specific Doctor");
     }
 
+    //function to display options of doctors portal
+    static void displayOptionsDoctorsPortal() {
+        System.out.println("\n=== Doctors Portal Menu ===");
+        System.out.println("1. Add Diagnosis Information");
+        System.out.println("2. Full History of Patient");
+        System.out.println("3. Check Upcoming Appointments");
+        System.out.println("4. Return to Main Menu");
+    }
+   
     // main portal to ask the user to be directed to.
     public static void mainPortal() {
         boolean flag = true;
@@ -305,6 +314,7 @@ public class Main {
                     break;
                 case 2:
                     // Navigate to Doctors PortalA
+                    DoctorsPortal();
                     break;
                 case 3:
                     // Navigate to the case statement handling the receptionist portal
@@ -425,6 +435,37 @@ public class Main {
                         System.out.println("Invalid choice");
                 }
             }
+        }
+    }
+
+
+    //this is the doctors portal. It will add diagnosis information,check patient's
+    //history and check upcoming appointments for doctor
+    public static void DoctorsPortal() {
+        displayOptionsDoctorsPortal();
+        System.out.print("Enter your choice: ");
+        int choiceDoctorsPortal = scanner.nextInt();
+        scanner.nextLine(); // Consume the newline character
+
+        switch (choiceDoctorsPortal) {
+            case 1:
+                System.out.println("You selected: Add Diagnosis Information");
+                addDiagnosisInformation(diagnosisList, scanner);
+                break;
+            case 2:
+                System.out.println("You selected: Full History of Patient");
+                displayFullPatientHistory(diagnosisList, scanner);
+                break;
+            case 3:
+                System.out.println("You selected: Check Upcoming Appointments");
+                checkUpcomingAppointments(appointmentsList, scanner);
+                break;
+            case 4:
+                System.out.println("You selected: Return to Main Menu");
+                mainPortal();
+                break;
+            default:
+                System.out.println("Invalid choice");
         }
     }
 
@@ -909,5 +950,80 @@ public class Main {
         t.start();
 
     }
+    // Add a new patient's diagnosis information based on user input
+    private static void addDiagnosisInformation(ArrayList<String[]> diagnosisList, Scanner scanner) {
+        System.out.print("Enter patient name: ");
+        String patientName = scanner.nextLine();
+        System.out.print("Enter symptoms: ");
+        String symptoms = scanner.nextLine();
+        System.out.print("Enter diagnosis: ");
+        String diagnosis = scanner.nextLine();
+        System.out.print("Enter prescribed medicines: ");
+        String medicines = scanner.nextLine();
+        System.out.print("Need to be hospitalized? (yes/no): ");
+        String needHospitalization = scanner.nextLine();
+        String suggestedWard = "";
+        if (needHospitalization.equalsIgnoreCase("yes")) {
+            System.out.print("Suggested Ward: ");
+            suggestedWard = scanner.nextLine();
+        }
+        System.out.print("Additional Notes: ");
+        String additionalNotes = scanner.nextLine();
 
+        // Creating a new array to store diagnosis information
+        String[] newDiagnosis = {patientName, symptoms, diagnosis, medicines, needHospitalization, suggestedWard, additionalNotes};
+
+        // Adding the new diagnosis to the ArrayList
+        diagnosisList.add(newDiagnosis);
+
+        System.out.println("Diagnosis information added successfully.");
+    }
+    // Display full history of a patient based on user input (by name or ID)
+    private static void displayFullPatientHistory(ArrayList<String[]> diagnosisList, Scanner scanner) {
+        System.out.print("Enter patient name: ");
+        String patientName = scanner.nextLine();
+
+        // Check if the patient name exists in the database
+        boolean patientFound = false;
+        for (String[] diagnosis : diagnosisList) {
+            if (diagnosis[0].equalsIgnoreCase(patientName)) {
+                System.out.println("Full History of Patient '" + patientName + "': " + arrayToString(diagnosis));
+                patientFound = true;
+            }
+        }
+
+        if (!patientFound) {
+            System.out.println("Patient with name '" + patientName + "' not found in the database.");
+        }
+    }
+
+    // Display upcoming appointments for a doctor
+    private static void checkUpcomingAppointments(ArrayList<String[]> appointmentsList, Scanner scanner) {
+        System.out.print("Enter doctor name: ");
+        String doctorName = scanner.nextLine();
+
+        // Check if the doctor name exists in the database
+        boolean doctorFound = false;
+        for (String[] appointment : appointmentsList) {
+            if (appointment[1].equalsIgnoreCase(doctorName)) {
+                System.out.println("Upcoming Appointments for Doctor '" + doctorName + "': " + arrayToString(appointment));
+                doctorFound = true;
+            }     }
+
+            if (!doctorFound) {
+                System.out.println("Doctor with name '" + doctorName + "' not found in the database.");
+            }
+        }
+    // Helper method to convert an array to a string for diagnosis information
+    private static String arrayToString(String[] array) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < array.length; i++) {
+            result.append(array[i]);
+            if (i < array.length - 1) {
+                result.append(", ");
+            }
+        }
+        return result.toString();
+    }
+       
 }
