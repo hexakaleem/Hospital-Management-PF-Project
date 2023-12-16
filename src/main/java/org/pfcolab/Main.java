@@ -32,28 +32,38 @@ public class Main {
 
     static Scanner scanner = new Scanner(System.in);
 
+    //Different files for different entity data and their path stored in variables
     final static String DATABASE = "HospitalData";
-    final static String DOCTORSFILENAME = "Doctors.txt";
-    final static String RECEPTIONISTSFILENAME = "Receptionists.txt";
-    final static String WARDSFILENAME = "Wards.txt";
-    final static String PATIENTSFILENAME = "Patients.txt";
-    final static String DIAGNOSISFILENAME = "Diagnosis.txt";
-    final static String APPOINTMENTSFILENAME = "Appointments.txt";
-    //Making the Number of Entities text to store the number of entities of a certain type already
-    //present in the database. So the count is updated each time more entities are added in the database
-    final static String NUMBEROFENTITIESFILENAME = "NumberofEntities.txt";
+    final static String DOCTORS_FILENAME = "Doctors.txt";
+    static File doctorDataFilePath = new File(DOCTORS_FILENAME);
+    final static String RECEPTIONISTS_FILE_NAME = "Receptionists.txt";
+    static File receptionistDataFilePath = new File(RECEPTIONISTS_FILE_NAME);
+    final static String WARDS_FILE_NAME = "Wards.txt";
+    static File wardDataFilePath = new File(WARDS_FILE_NAME);
+    final static String PATIENTS_FILE_NAME = "Patients.txt";
+    static File patientDataFilePath = new File(PATIENTS_FILE_NAME);
+    final static String DIAGNOSIS_FILE_NAME = "Diagnosis.txt";
+    static File diagnosisDataFilePath = new File(DIAGNOSIS_FILE_NAME);
+    final static String APPOINTMENTS_FILE_NAME = "Appointments.txt";
+    static File appointmentsDataFilePath = new File(APPOINTMENTS_FILE_NAME);
+    final static String NUMBER_OF_ENTITIES_FILE_NAME = "NumberofEntities.txt";
+    static File entityDataFilePath = new File(NUMBER_OF_ENTITIES_FILE_NAME);
 
     //Password for admin
     static String savedAdminPassword = "kaleem";
     static String currentDir = System.getProperty("user.dir");
     final static String databaseFilePath = currentDir + "//" + DATABASE + ".accdb";
+
+//--------------------------------------------------------------------------------------------------------------------//
     /*
     * Array lists for the stored data of multiple entries
     * We are using String array to store the data of one entity
     * The structure of each Entity is commented before declaration the line
-    * */
+     */
 
-    //['Doc ID', 'Doc Name' , 'Time Start', 'Time End','Ward Name', 'Specialized In', 'Password']
+
+
+    //['Doc ID', 'Doc Name' , 'Time Start', 'Time End', 'Ward Name', 'Specialized In']
     static ArrayList<String[]> doctorsList = new ArrayList<>();
 
     //['Recep ID', 'Receptionist Name' , 'Password']
@@ -71,12 +81,17 @@ public class Main {
     //['Appointment ID', 'Patient ID' , 'Doctor ID','Time Start','Time End']
     static ArrayList<String[]> appointmentsList = new ArrayList<>();
 
-    static int numberOfDoctors, numberOfReceptionists, numberOfWards, numberOfPatients, numberOfDiagnosis, numberOfAppointments;
-    static int[] numberOfEntitiesArray = {numberOfDoctors, numberOfReceptionists, numberOfWards, numberOfPatients, numberOfDiagnosis, numberOfAppointments};
+    static int numberOfDoctors,numberOfReceptionists,numberOfWards,numberOfPatients,numberOfDiagnosis,numberOfAppointments;
+    static int[] numberOfEntitiesArray = {numberOfDoctors, numberOfReceptionists, numberOfWards, numberOfPatients,
+            numberOfDiagnosis, numberOfAppointments};
+
+//--------------------------------------------------------------------------------------------------------------------//
 
     //main function! wow!! ;)
     public static void main(String[] args) {
-
+        //Reading all the data after the program boots
+        mainDataReader();
+        //opening the main portal
         mainPortal();
 
     }
@@ -129,36 +144,37 @@ public class Main {
 
     //Now we are making a function for admin login it works only if the user has the correct password
     //and login Name.
-    static boolean isAdminPasswordCorrect(){
-
+    static boolean isAdminPasswordCorrect() {
         System.out.println("Enter your Password: ");
         String enteredAdminPassword = scanner.nextLine();
         System.out.println(enteredAdminPassword);
         System.out.println(savedAdminPassword);
-        return(enteredAdminPassword.equals(savedAdminPassword));
-
+        return enteredAdminPassword.equals(savedAdminPassword);
     }
 
-    static void paswordChecker(){
-
-        //Checking if the password is correct
+    public static void passwordChecker() {
+        // Checking if the password is correct
         int loginTries = 0;
         while (!isAdminPasswordCorrect()) {
             System.out.println("Wrong Password!");
             loginTries++;
             if (loginTries == 5) {
-                System.out.println("You have entered wrong password 5 times, returning to Main Menu");
+                System.out.println("You have entered the wrong password 5 times, returning to Main Menu");
                 mainPortal();
+                return; // Exit the method to avoid the unnecessary check below
             }
         }
+
+        // This code is reached only if the password is correct
+        System.out.println("Password is Correct");
     }
 
     //This is the admin portal. It has the ability to add and remove doctors, receptionists and wards
     public static void adminPortal() {
 
-        //checking password
-        paswordChecker();
-        while (true)
+        passwordChecker();
+        boolean exit = false;
+        while (!exit)
         {
             //displaying options for admin portal
             displayOptionsAdminPortal();
@@ -171,7 +187,6 @@ public class Main {
                     System.out.println("You selected: Add Doctors Data");
                     // Add your logic for this option
                     addDoctorFromUserInput(doctorsList, scanner);
-
                     break;
                 case 2:
                     System.out.println("You selected: Edit Doctors Data");
@@ -183,7 +198,7 @@ public class Main {
                     break;
                 case 4:
                     System.out.println("You selected: Display all Doctors");
-                    // Add your logic for this option
+                    displayAllDoctors(doctorsList);
                     break;
                 case 5:
                     System.out.println("You selected: Display Specific Doctor's Data");
@@ -224,6 +239,7 @@ public class Main {
                 case 14:
                     System.out.println("You selected: Return to Main Menu");
                     mainPortal();
+                    exit = true;
                     break;
                 default:
                     System.out.println("Invalid choice");
@@ -238,7 +254,7 @@ public class Main {
 
     //checking if entity file is created, if not, then it is created with initial values staring from 0
     public static void entityFileCreator() {
-        File entityDataFilePath = new File(NUMBEROFENTITIESFILENAME);
+
         try {
 
             // Check if the file doesn't exist, create it
@@ -258,8 +274,6 @@ public class Main {
                 //I made it because I felt like it otherwise the system won't be complete.
             }
 
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -267,7 +281,6 @@ public class Main {
 
     // Function reads the number of entities present in the files updating their values in numberOfEntitiesArray[i]
     public static void entityReaderFromFile() {
-        File entityDataFilePath = new File(NUMBEROFENTITIESFILENAME);
         try {
             // Check if the file doesn't exist, create it and initialize 0 values
             entityFileCreator();
@@ -281,15 +294,13 @@ public class Main {
             in.close();
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 
     // This function will update the number of Entities after they have been updated during
     // new entity ID creating, which occurs when a new Entity is created.
     public static void entityUpdaterToFile() {
-        File entityDataFilePath = new File(NUMBEROFENTITIESFILENAME);
+
         try {
             FileOutputStream fos = new FileOutputStream(entityDataFilePath, false);
             PrintStream ps = new PrintStream(fos);
@@ -300,8 +311,6 @@ public class Main {
             }
             ps.close(); // Close the stream after writing
         } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -339,9 +348,154 @@ public class Main {
         }
     }
 
+//--------------------------------------------------------------------------------------------------------------------//
+    /* Functions to Read Data into their corresponding ArrayLists are below:
+     * These include functions for Doctor Data, Receptionist Data, Ward Data, Patient Data, Diagnosis Data,
+     * Appointment Data.
+     * These are all then connected to a main Data Storage Function mainDataReader();
+     */
+
+    //1-Doctor Data, 2-Receptionist Data, 3-Ward Data, 4-Patient Data, 5-Diagnosis Data, 6-Appointment Data.
+    //Main Data reader menu containing all the functions for other readers
+    //Changing mainDataReader to read all data once the program boots
+    public static void mainDataReader() {
+    //For now keeping dataNumber<=1 because we have not made other txt files database
+        for (int dataNumber = 1; dataNumber <= 1; dataNumber++) {
+
+            switch (dataNumber) {
+                case 1:
+                    // Read doctors' data
+                    readDoctorsDataToArrayList();
+                    break;
+                case 2:
+                    // Read receptionists' data
+                    readReceptionistsDataToArrayList();
+                    break;
+                case 3:
+                    // Read ward data
+                    readWardsDataToArrayList();
+                    break;
+                case 4:
+                    // Read patient data
+                    readPatientsDataToArrayList();
+                    break;
+                case 5:
+                    // Read diagnosis data
+                    readDiagnosisDataToArrayList();
+                    break;
+                case 6:
+                    // Read appointment data
+                    readAppointmentsDataToArrayList();
+                    break;
+                default:
+                    System.out.println("Invalid data number.");
+            }
+        }
+    }
+
+
+    //Function to read doctor data from the file containing all the doctors
+    //['Doc ID', 'Doc Name' , 'Time Start', 'Time End', 'Ward Name', 'Specialized In']
+    public static void readDoctorsDataToArrayList() {
+
+        try {
+            Scanner reading = new Scanner(doctorDataFilePath);
+            while (reading.hasNextLine()) {
+                String line = reading.nextLine();
+                // Remove square brackets and split by comma and space
+                String[] doctorDataArray = line.replaceAll("[\\[\\]]", "").split(", ");
+                doctorsList.add(doctorDataArray);
+            }
+            reading.close();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //Reading Receptionist data into array list
+    //['Recep ID', 'Receptionist Name' , 'Password']
+    public static void readReceptionistsDataToArrayList() {
+        try {
+            Scanner reading = new Scanner(receptionistDataFilePath);
+            while (reading.hasNextLine()) {
+                String[] receptionistsDataArray = reading.nextLine().replaceAll("[\\[\\]]", "")
+                        .split(", ");
+                receptionistsList.add(receptionistsDataArray);
+            }
+            reading.close();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //['Ward ID', 'Ward Name' , 'Total Beds','Occupied Beds','Type']
+    public static void readWardsDataToArrayList() {
+        try {
+            Scanner reading = new Scanner(wardDataFilePath);
+            while (reading.hasNextLine()) {
+                String[] wardsDataArray = reading.nextLine().replaceAll("[\\[\\]]", "").split(", ");
+                wardsList.add(wardsDataArray);
+            }
+            reading.close();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //['Patient ID', 'Patient Name' , 'Gender','Age','Contact']
+    public static void readPatientsDataToArrayList() {
+        try {
+            Scanner reading = new Scanner(patientDataFilePath);
+            while (reading.hasNextLine()) {
+                String[] patientsDataArray = reading.nextLine().replaceAll("[\\[\\]]", "").split(", ");
+                patientsList.add(patientsDataArray);
+            }
+            reading.close();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //['Diagnosis ID', 'Patient ID' , 'Doctor ID','Prescriptions','Diagnosis','Appointment ID']
+    public static void readDiagnosisDataToArrayList() {
+        try {
+            Scanner reading = new Scanner(diagnosisDataFilePath);
+            while (reading.hasNextLine()) {
+                String[] diagnosisDataArray = reading.nextLine().replaceAll("[\\[\\]]", "").split(", ");
+                diagnosisList.add(diagnosisDataArray);
+            }
+            reading.close();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //['Appointment ID', 'Patient ID' , 'Doctor ID','Time Start','Time End']
+    public static void readAppointmentsDataToArrayList() {
+        try {
+            Scanner reading = new Scanner(appointmentsDataFilePath);
+            while (reading.hasNextLine()) {
+                String[] appointmentsDataArray = reading.nextLine().replaceAll("[\\[\\]]", "").split(", ");
+                appointmentsList.add(appointmentsDataArray);
+            }
+            reading.close();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+//--------------------------------------------------------------------------------------------------------------------//
+
+    /* Functions to write Data into their corresponding txt files are below:
+     * These include functions for Doctor Data, Receptionist Data, Ward Data, Patient Data, Diagnosis Data,
+     * Appointment Data.
+     * These are all then connected to a main Data Storage Function mainDataWriter();
+     */
+
+    //Store the doctor data to the txt file
     public static void storeDoctorToFile(String doctorsData) {
-        File file = new File(DOCTORSFILENAME);
-        try (PrintWriter writer = new PrintWriter(new FileWriter(file, true))) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(doctorDataFilePath, true))) {
             writer.println(doctorsData);
         } catch (Exception e) {
             System.out.println("\nThere is an error saving the data to the file. Make sure the file is not opened anywhere.");
@@ -349,7 +503,11 @@ public class Main {
         }
     }
 
-    /* Functions to manipulate doctor database are below:
+    //Rest functions to be added...
+
+//--------------------------------------------------------------------------------------------------------------------//
+
+    /* Functions to manipulate doctor to the array (which are then updated to the database txt file) are below:
      * These include add, edit, delete, display all, display specific doctors
      * Use with care ;)
      */
@@ -373,6 +531,9 @@ public class Main {
         String[] newDoctor = {generateID("Doctor"),name, timingStart,timingEnd, ward, specialty};
 
         // Adding the new doctor to the ArrayList
+        //Although I think since we are reading data from the txt file, adding to ArrayList would be pointless since
+        //it will be overwritten every time from the adminPortal() function when a new doctor is added
+        //One thing we can do is only read once at the start of program instead of reading everytime??
         doctorsList.add(newDoctor);
 
         //Adding the doctor to the file data
@@ -385,7 +546,8 @@ public class Main {
     private static void displayAllDoctors(ArrayList<String[]> doctorsList) {
         System.out.println("\nList of Doctors:");
         for (int i = 0; i < doctorsList.size(); i++) {
-            System.out.println("Doctor ID: " + doctorsList.get(i)[0] + ", Doctor Info: " + Arrays.toString(doctorsList.get(i)) );
+            System.out.println("Doctor ID: " + doctorsList.get(i)[0] + ", Doctor Info: "
+                    + Arrays.toString(doctorsList.get(i)));
         }
     }
 
