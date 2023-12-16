@@ -482,23 +482,23 @@ public class Main {
                     case 1:
                         System.out.println("You selected: Add Doctors Data");
                         // Add your logic for this option
-                        addDoctorFromUserInput(doctorsList, scanner);
+                        addDoctorFromUserInput();
                         break;
                     case 2:
                         System.out.println("You selected: Edit Doctors Data");
-                        editDoctorDetails(doctorsList, scanner);
+                        editDoctorDetailsMenu( );
                         break;
                     case 3:
                         System.out.println("You selected: Delete Doctors Data");
-                        deleteDoctorFromUserInput(doctorsList, scanner);
+                        deleteDoctorFromUserInput( );
                         break;
                     case 4:
                         System.out.println("You selected: Display all Doctors");
-                        displayAllDoctors(doctorsList, appointmentsList);
+                        displayAllDoctors( );
                         break;
                     case 5:
                         System.out.println("You selected: Display Specific Doctor's Data");
-                        viewSpecificDoctorDetails(doctorsList, scanner);
+                        viewSpecificDoctorDetails( );
                         break;
                     case 6:
                         System.out.println("You selected: Add Receptionists");
@@ -616,7 +616,7 @@ public class Main {
      */
 
     // Add a new doctor to the database based on user input
-    private static void addDoctorFromUserInput(ArrayList<String[]> doctorsList, Scanner scanner) {
+    private static void addDoctorFromUserInput() {
         System.out.println("\nEnter details for the new doctor:");
         System.out.print("Enter doctor name: ");
         String name = scanner.nextLine();
@@ -647,7 +647,7 @@ public class Main {
     }
 
     // Display all doctors in the database
-    private static void displayAllDoctors(ArrayList<String[]> doctorsList, ArrayList<String[]> appointmentsList) {
+    private static void displayAllDoctors() {
         System.out.println("\nList of Doctors:");
         System.out.printf("%-10s %-20s %-15s %-15s %-20s %-20s %-15s\n", "Doctor ID", "Doctor Name", "Start Time",
                 "End Time", "Ward", "Specialty", "Appointments Count");
@@ -669,12 +669,12 @@ public class Main {
     }
 
     // Helper method to count the number of appointments made by a specific doctor
-    private static long countAppointmentsForDoctor(ArrayList<String[]> appointmentsList, String doctorId) {
+    private static long countAppointmentsForDoctor(String doctorId) {
         return appointmentsList.stream().filter(appointment -> doctorId.equals(appointment[2])).count();
     }
 
     // Get the index of a doctor by ID
-    private static int getDoctorIndexById(ArrayList<String[]> doctorsList, String id) {
+    private static int getDoctorIndexById( String id) {
         for (int i = 0; i < doctorsList.size(); i++) {
             if (id.equals(doctorsList.get(i)[0])) {
                 return i;
@@ -684,7 +684,7 @@ public class Main {
     }
 
     // Edit details of a doctor based on user input (by name or ID)
-    private static void editDoctorDetails(ArrayList<String[]> doctorsList, Scanner scanner) {
+    private static void editDoctorDetailsMenu() {
         System.out.println("\nSelect the option to edit:");
         System.out.println("1. Edit by Name");
         System.out.println("2. Edit by ID");
@@ -694,10 +694,10 @@ public class Main {
 
         switch (editOption) {
             case 1:
-                editDoctorByName(doctorsList, scanner);
+                editDoctorByName();
                 break;
             case 2:
-                editDoctorById(doctorsList, scanner);
+                editDoctorById();
                 break;
             default:
                 System.out.println("Invalid edit option. No changes made.");
@@ -705,17 +705,17 @@ public class Main {
     }
 
     // Helper method to edit details of a doctor by name
-    private static void editDoctorByName(ArrayList<String[]> doctorsList, Scanner scanner) {
+    private static void editDoctorByName() {
         System.out.print("Enter the name of the doctor to edit details: ");
         String doctorNameToEdit = scanner.nextLine();
 
         // Check if the doctor name exists in the database
-        int doctorIndexToEdit = getDoctorIndexByName(doctorsList, doctorNameToEdit);
+        int doctorIndexToEdit = getDoctorIndexByName(doctorNameToEdit);
 
         if (doctorIndexToEdit != -1) {
-            editDoctorDetails(doctorIndexToEdit, doctorsList, scanner);
+            editDoctorDetails(doctorIndexToEdit);
             // Update the file after editing
-            updateDatabaseFileThread(DOCTORS_FILENAME, doctorsList);
+            updateDatabaseFileThread(DOCTORS_FILENAME,doctorsList);
             System.out.println("Details of Doctor '" + doctorNameToEdit + "' have been edited.");
         } else {
             System.out.println("Doctor with name '" + doctorNameToEdit + "' not found in the database.");
@@ -723,15 +723,15 @@ public class Main {
     }
 
     // Helper method to edit details of a doctor by ID
-    private static void editDoctorById(ArrayList<String[]> doctorsList, Scanner scanner) {
+    private static void editDoctorById() {
         System.out.print("Enter the ID of the doctor to edit details: ");
         String doctorIdToEdit = scanner.nextLine();
 
         // Check if the doctor ID exists in the database
-        int doctorIndexToEdit = getDoctorIndexById(doctorsList, doctorIdToEdit);
+        int doctorIndexToEdit = getDoctorIndexById(doctorIdToEdit);
 
         if (doctorIndexToEdit != -1) {
-            editDoctorDetails(doctorIndexToEdit, doctorsList, scanner);
+            editDoctorDetails(doctorIndexToEdit);
             // Update the file after editing
             updateDatabaseFileThread(DOCTORS_FILENAME, doctorsList);
             System.out.println("Details of Doctor '" + doctorIdToEdit + "' have been edited.");
@@ -741,7 +741,7 @@ public class Main {
     }
 
     // Helper method to edit details of a doctor at a specific index
-    private static void editDoctorDetails(int index, ArrayList<String[]> doctorsList, Scanner scanner) {
+    private static void editDoctorDetails(int index) {
         String[] doctorDetails = doctorsList.get(index);
         System.out.println("Current Details of Doctor '" + index + "': " + Arrays.toString(doctorDetails));
 
@@ -751,9 +751,10 @@ public class Main {
         System.out.println("3. Edit Doctor End Time");
         System.out.println("4. Edit Doctor Ward");
         System.out.println("5. Edit Doctor Specialty");
+        System.out.println("6. Cancel Operation");
         System.out.print("Enter your choice: ");
         int editChoice = scanner.nextInt();
-        scanner.nextLine(); // Consume the newline character
+        scanner.nextLine(); 
 
         switch (editChoice) {
             case 1:
@@ -781,30 +782,32 @@ public class Main {
                 String newSpecialty = scanner.nextLine();
                 doctorDetails[5] = newSpecialty;
                 break;
+             case 6:
+                System.out.println("No changes made.");
+                break;
             default:
                 System.out.println("Invalid edit choice. No changes made.");
         }
 
-        System.out
-                .println("Details of Doctor '" + doctorDetails[0] + "' after edit: " + Arrays.toString(doctorDetails));
+        System.out.println("Details of Doctor '" + doctorDetails[0] + "' after edit: " + Arrays.toString(doctorDetails));
     }
 
     // Delete a doctor from the database based on user input (by name or ID)
-    private static void deleteDoctorFromUserInput(ArrayList<String[]> doctorsList, Scanner scanner) {
+    private static void deleteDoctorFromUserInput() {
         System.out.println("Choose the option to delete:");
         System.out.println("1. Delete by Name");
         System.out.println("2. Delete by ID");
         System.out.print("Enter your choice: ");
 
         int deleteOption = scanner.nextInt();
-        scanner.nextLine(); // Consume the newline character
+        scanner.nextLine();  
 
         switch (deleteOption) {
             case 1:
-                deleteDoctorByName(doctorsList, scanner);
+                deleteDoctorByName();
                 break;
             case 2:
-                deleteDoctorById(doctorsList, scanner);
+                deleteDoctorById();
                 break;
             default:
                 System.out.println("Invalid choice. No changes made.");
@@ -812,12 +815,12 @@ public class Main {
     }
 
     // Delete a doctor from the database based on user input (by name)
-    private static void deleteDoctorByName(ArrayList<String[]> doctorsList, Scanner scanner) {
+    private static void deleteDoctorByName() {
         System.out.print("\nEnter the name of the doctor to delete: ");
         String doctorNameToDelete = scanner.nextLine();
 
         // Check if the doctor name exists in the database
-        int doctorIndexToDelete = getDoctorIndexByName(doctorsList, doctorNameToDelete);
+        int doctorIndexToDelete = getDoctorIndexByName(doctorNameToDelete);
 
         if (doctorIndexToDelete != -1) {
             // Delete the doctor
@@ -829,12 +832,12 @@ public class Main {
     }
 
     // Delete a doctor from the database based on user input (by ID)
-    private static void deleteDoctorById(ArrayList<String[]> doctorsList, Scanner scanner) {
+    private static void deleteDoctorById() {
         System.out.print("\nEnter the ID of the doctor to delete: ");
         String doctorIdToDelete = scanner.nextLine();
 
         // Check if the doctor ID exists in the database
-        int doctorIndexToDelete = getDoctorIndexById(doctorsList, doctorIdToDelete);
+        int doctorIndexToDelete = getDoctorIndexById(doctorIdToDelete);
 
         if (doctorIndexToDelete != -1) {
             // Delete the doctor
@@ -846,21 +849,21 @@ public class Main {
     }
 
     // View specific doctor details based on user input (by name or ID)
-    private static void viewSpecificDoctorDetails(ArrayList<String[]> doctorsList, Scanner scanner) {
+    private static void viewSpecificDoctorDetails() {
         System.out.println("\n View Specific Doctor Details :");
         System.out.println("1. by Name ");
         System.out.println("2. by ID ");
         System.out.print("Enter your choice: ");
 
         int choice = scanner.nextInt();
-        scanner.nextLine(); // Consume the newline character
+        scanner.nextLine(); 
 
         switch (choice) {
             case 1:
-                viewDoctorDetailsByName(doctorsList, scanner);
+                viewDoctorDetailsByName();
                 break;
             case 2:
-                viewDoctorDetailsById(doctorsList, scanner);
+                viewDoctorDetailsById();
                 break;
             default:
                 System.out.println("Invalid choice. ");
@@ -868,12 +871,12 @@ public class Main {
     }
 
     // View specific doctor details based on user input (by name)
-    private static void viewDoctorDetailsByName(ArrayList<String[]> doctorsList, Scanner scanner) {
+    private static void viewDoctorDetailsByName() {
         System.out.print("\nEnter the name of the doctor to view details: ");
         String doctorNameToView = scanner.nextLine();
 
         // Check if the doctor name exists in the database
-        int doctorIndexToView = getDoctorIndexByName(doctorsList, doctorNameToView);
+        int doctorIndexToView = getDoctorIndexByName( doctorNameToView);
 
         if (doctorIndexToView != -1) {
             // View the details of the specific doctor
@@ -885,12 +888,12 @@ public class Main {
     }
 
     // View specific doctor details based on user input (by ID)
-    private static void viewDoctorDetailsById(ArrayList<String[]> doctorsList, Scanner scanner) {
+    private static void viewDoctorDetailsById() {
         System.out.print("\nEnter the ID of the doctor to view details: ");
         String doctorIdToView = scanner.nextLine();
 
         // Check if the doctor ID exists in the database
-        int doctorIndexToView = getDoctorIndexById(doctorsList, doctorIdToView);
+        int doctorIndexToView = getDoctorIndexById(doctorIdToView);
 
         if (doctorIndexToView != -1) {
             // View the details of the specific doctor
@@ -902,7 +905,7 @@ public class Main {
     }
 
     // Get the index of a doctor by name
-    private static int getDoctorIndexByName(ArrayList<String[]> doctorsList, String name) {
+    private static int getDoctorIndexByName( String name) {
         for (int i = 0; i < doctorsList.size(); i++) {
             if (name.equals(doctorsList.get(i)[1])) {
                 return i;
@@ -942,8 +945,6 @@ public class Main {
                 throw new RuntimeException(e);
             }
         }
-        ;
-
     }
 
 }
