@@ -1,0 +1,6 @@
+[DOC-001, Ahmed, 6PM, 3AM, Cardiology, Cardiologist]
+[DOC-002, Hassan, 5PM, 12AM, Brain, Brain Surgeon]
+[DOC-003, Adeel, 11PM, 6AM, Psychiatry, Psychiatrist]
+[DOC-004, Noor, 1PM, 8PM, Emergency, Health Specialist ]
+[DOC-005, Kaleem, 12PM, 12AM, Computer Ward, Computer Sergion]
+[DOC-006, Suleman, 7PM, 7AM, Eye, Eye Surgeion]
