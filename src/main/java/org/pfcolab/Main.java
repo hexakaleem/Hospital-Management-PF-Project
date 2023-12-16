@@ -1,7 +1,7 @@
 package org.pfcolab;
 
 import java.io.*;
-import java.util.*; 
+import java.util.*;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
@@ -88,6 +88,7 @@ public class Main {
     // numberOfDiagnosis, numberOfAppointments }
     static int[] numberOfEntitiesArray = new int[6];
 
+    static String[] globalVariablesArray = new String[7];
     // --------------------------------------------------------------------------------------------------------------------//
 
     // main function! wow!! ;)
@@ -99,26 +100,118 @@ public class Main {
         mainPortal();
     }
 
-    // this function updates the file of Entity by using Async threading, it will
-    // run in background and ui will not be hanged.
-    public static void updateDatabaseFile(String nameOfEntityChanged) {
-        if (nameOfEntityChanged.equals("VariablesArray")) {
-            updateSystemVariablesFile();
-        } else if (nameOfEntityChanged.equals("Doctor")) {
-            updateDatabaseFile(DOCTORS_FILENAME, doctorsList);
-        } else if (nameOfEntityChanged.equals("Receptionist")) {
-            updateDatabaseFile(RECEPTIONISTS_FILE_NAME, receptionistsList);
-        } else if (nameOfEntityChanged.equals("Ward")) {
-            updateDatabaseFile(WARDS_FILE_NAME, wardsList);
-        } else if (nameOfEntityChanged.equals("Patient")) {
-            updateDatabaseFile(PATIENTS_FILE_NAME, patientsList);
-        } else if (nameOfEntityChanged.equals("Diagnosis")) {
-            updateDatabaseFile(DIAGNOSIS_FILE_NAME, diagnosisList);
-        } else if (nameOfEntityChanged.equals("Appointment")) {
-            updateDatabaseFile(APPOINTMENTS_FILE_NAME, appointmentsList);
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Functions for Managing Unique ID Creation
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /*
+     * Functions to Generate ID are below:
+     * These include checking if a file for Entity Numbers exits and adding initial
+     * 0 values in a newly created file
+     * Reading the file and writing values back in it
+     */
+
+    // checking if systemVariablesFile is created, if not, then it is created with
+    // initial
+    // values staring from 0
+
+    // It is to be called by Updating thread only, precondition for this is to have
+    // the empty file., it overwrites the previous file
+    public static void updateSystemVariablesFile() {
+        loadGlobalVariablesIntoArray();
+        try (FileOutputStream fos = new FileOutputStream(systemVariablesFilePath, false)) {
+            PrintStream ps = new PrintStream(fos); 
+            for (int i = 0; i < globalVariablesArray.length; i++) {
+                ps.println(globalVariablesArray[i]);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Load the system variables like the total number of entites and admin password
+    public static void loadSystemVariables() {
+        try (FileReader fr = new FileReader(systemVariablesFilePath);
+                Scanner variablesFileScanner = new Scanner(fr)) {
+            int i = 0;
+            while (variablesFileScanner.hasNextLine()) {
+                globalVariablesArray[i++] = variablesFileScanner.nextLine();
+            }
+            setGlobalVariablesFromArray();
+        } catch (Exception e) {
+            System.out.println("Something went wrong: " + e.getMessage());
+        }
+    }
+
+    public static String generateID(String entityType) {
+
+        switch (entityType) {
+            case "Doctor":
+                numberOfEntitiesArray[0] += 1; 
+                return "DOC-" + String.format("%03d", numberOfEntitiesArray[0]);
+            case "Receptionist":
+                numberOfEntitiesArray[1] += 1; 
+                return "REP-" + String.format("%03d", numberOfEntitiesArray[1]);
+            case "Ward":
+                numberOfEntitiesArray[2] += 1; 
+                return "W-" + String.format("%03d", numberOfEntitiesArray[2]);
+            case "Patient":
+                numberOfEntitiesArray[3] += 1; 
+                return "P-" + String.format("%03d", numberOfEntitiesArray[3]);
+            case "Diagnosis":
+                numberOfEntitiesArray[4] += 1; 
+                return "DIA-" + String.format("%03d", numberOfEntitiesArray[4]);
+            case "Appointment":
+                numberOfEntitiesArray[5] += 1; 
+                return "APT-" + String.format("%03d", numberOfEntitiesArray[5]);
+            default:
+                return "";
         }
 
     }
+
+    // It will be run before wiritng to SystemVariables file
+    public static void loadGlobalVariablesIntoArray() {
+        globalVariablesArray[0] = adminPassword;
+        for (int i = 0; i < numberOfEntitiesArray.length; ++i) {
+            globalVariablesArray[i + 1] = Integer.toString(numberOfEntitiesArray[i]);
+        }
+    }
+
+    // after reading the data from SystemVariables file, it will run to set that
+    // into programme
+    public static void setGlobalVariablesFromArray() {
+        adminPassword = globalVariablesArray[0];
+        for (int i = 0; i < numberOfEntitiesArray.length; ++i) {
+            numberOfEntitiesArray[i] = Integer.parseInt(globalVariablesArray[i + 1]);
+        }
+    }
+
+    // this function updates the file of Entity by using Async threading, it will
+    // run in background and ui will not be hanged.
+    public static void updateDatabaseFile(String nameOfEntityChanged) {
+        if (nameOfEntityChanged.equals("Doctor")) {
+            updateDatabaseFileThread(DOCTORS_FILENAME, doctorsList);
+        } else if (nameOfEntityChanged.equals("Receptionist")) {
+            updateDatabaseFileThread(RECEPTIONISTS_FILE_NAME, receptionistsList);
+        } else if (nameOfEntityChanged.equals("Ward")) {
+            updateDatabaseFileThread(WARDS_FILE_NAME, wardsList);
+        } else if (nameOfEntityChanged.equals("Patient")) {
+            updateDatabaseFileThread(PATIENTS_FILE_NAME, patientsList);
+        } else if (nameOfEntityChanged.equals("Diagnosis")) {
+            updateDatabaseFileThread(DIAGNOSIS_FILE_NAME, diagnosisList);
+        } else if (nameOfEntityChanged.equals("Appointment")) {
+            updateDatabaseFileThread(APPOINTMENTS_FILE_NAME, appointmentsList);
+        }
+        updateSystemVariablesFile();
+
+    }
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// Unique ID Generation Functions End here
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Functions Related to Password Creation and Confirmation
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // This funtion checks for the password strength and updates it in file and
     // global variable
@@ -126,7 +219,6 @@ public class Main {
         if (isValidPassword(password)) {
             adminPassword = password;
             System.out.println("\n Password is set Successfully");
-            updateDatabaseFile("VariablesArray");
             return true;
         } else {
             System.out.println(
@@ -136,7 +228,7 @@ public class Main {
 
     }
 
-    private static void updateAdminPassword(Scanner scanner) {
+    public static void updateAdminPassword(Scanner scanner) {
         System.out.print("\nEnter the current admin password: ");
         String currentPassword = scanner.nextLine();
 
@@ -174,15 +266,59 @@ public class Main {
             return false;
     }
 
+    // Now we are making a function for admin login it works only if the user has
+    // the correct password
+    // and login Name.
+    public static boolean isAdminPasswordCorrect() {
+        System.out.println("Enter your Password: ");
+        String enteredAdminPassword = scanner.nextLine();
+        return enteredAdminPassword.equals(adminPassword);
+    }
+
+    public static boolean passwordChecker() {
+        // Checking if the password is correct
+        int loginTries = 1;
+        while (!isAdminPasswordCorrect()) {
+            System.out.println("Wrong Password! " + (5 - loginTries) + " tries left.");
+
+            if (loginTries == 5) {
+                System.out.println(
+                        "You have entered the wrong password " + loginTries + " times, returning to Main Menu");
+
+                return false; // Exit the method to avoid the unnecessary check below
+            }
+            loginTries++;
+
+        }
+
+        // This code is reached only if the password is correct
+        System.out.println("Password is Correct");
+        return true;
+    }
+
+    public static void setAdminPasswordForFirstTime() {
+        System.out.println("The system is running for the first time!! . You are required to setup the admin Password");
+
+        String pass;
+        do {
+            System.out.print("Enter Password:");
+            pass = scanner.nextLine();
+        } while (!setAdminPassword(pass));
+    }
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Functions Related to Dummy Data Creation
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     public static void initilizeProgramme() {
         if (!systemVariablesFilePath.exists()) {
-            createEmptyDatabaseFiles();
+                setAdminPasswordForFirstTime();
+                createEmptyDatabaseFiles();
         } else {
             loadDatabaseFiles();
         }
     }
 
-    private static void addDummyDoctor() {
+    public static void addDummyDoctor() {
         String doctorID = generateID("Doctor");
         String doctorName = "Doctor" + RandomStringUtils.randomNumeric(2);
         String timingStart = RandomStringUtils.randomNumeric(1) + "AM";
@@ -195,7 +331,7 @@ public class Main {
 
     }
 
-    private static void addDummyReceptionist() {
+    public static void addDummyReceptionist() {
         String receptionistID = generateID("Receptionist");
         String receptionistName = "Receptionist" + RandomStringUtils.randomNumeric(2);
         String password = RandomStringUtils.randomAlphanumeric(8);
@@ -205,7 +341,7 @@ public class Main {
 
     }
 
-    private static void addDummyWard() {
+    public static void addDummyWard() {
         String wardID = generateID("Ward");
         String wardName = "Ward" + RandomStringUtils.randomNumeric(2);
         String totalBeds = RandomStringUtils.randomNumeric(2);
@@ -217,7 +353,7 @@ public class Main {
 
     }
 
-    private static void addDummyPatient() {
+    public static void addDummyPatient() {
         String patientID = generateID("Patient");
         String patientName = "Patient" + RandomStringUtils.randomNumeric(2);
         String gender = (RandomUtils.nextInt(0, 0) == 1) ? "Male" : "Female";
@@ -229,44 +365,54 @@ public class Main {
 
     }
 
-  
-    // Add similar functions for other entities (8 more for each entity)
-
-    private static void createEmptyFakeFiles() {
+    public static void createFakeDataFiles() {
         for (int i = 0; i < 10; ++i) {
             addDummyDoctor();
             addDummyReceptionist();
             addDummyWard();
             addDummyPatient();
-            
         }
-        updateDatabaseFile(DOCTORS_FILENAME, doctorsList);
-        updateDatabaseFile(APPOINTMENTS_FILE_NAME, appointmentsList);
-        updateDatabaseFile(DIAGNOSIS_FILE_NAME, diagnosisList);
-        updateDatabaseFile(PATIENTS_FILE_NAME, patientsList);
-        updateDatabaseFile(WARDS_FILE_NAME, wardsList);
-        updateDatabaseFile(RECEPTIONISTS_FILE_NAME, receptionistsList);
+        updateDatabaseFileThread(DOCTORS_FILENAME, doctorsList);
+        updateDatabaseFileThread(APPOINTMENTS_FILE_NAME, appointmentsList);
+        updateDatabaseFileThread(DIAGNOSIS_FILE_NAME, diagnosisList);
+        updateDatabaseFileThread(PATIENTS_FILE_NAME, patientsList);
+        updateDatabaseFileThread(WARDS_FILE_NAME, wardsList);
+        updateDatabaseFileThread(RECEPTIONISTS_FILE_NAME, receptionistsList);
         updateDatabaseFile("VariablesArray");
     }
 
-    // here all the files will be checked, if the system in running for the first
-    // time, all files should be made empty, or added with fake data :TODO
-    public static void createEmptyDatabaseFiles() {
-        if (!systemVariablesFilePath.exists()) {
-            System.out.println(
-                    "The system is running for the first time!! . You are required to setup the admin Password");
-            createEmptySystemVariablesFile();
-            
-            String pass;
-            do {
-                System.out.print("Enter Password:");
-                pass = scanner.nextLine();
-            } while (!setAdminPassword(pass));
-            createEmptyFakeFiles();
-            updateDatabaseFile("VariablesArray");
+    public static void createEmptySystemVariablesFile() {
+        try {
+            // Check if the file doesn't exist, create it
+            if (!systemVariablesFilePath.exists()) {
+                systemVariablesFilePath.createNewFile();
+                FileOutputStream fos = new FileOutputStream(systemVariablesFilePath, false);
+                PrintStream ps = new PrintStream(fos);
+
+                // Storing 0 values in new file
+                for (int i = 0; i < globalVariablesArray.length; i++) {
+                    ps.println(0);
+                }
+                ps.close();
+                fos.close();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
+    // here all the files will be checked, if the system in running for the first
+    // time, all files should be made empty, or added with fake data
+    public static void createEmptyDatabaseFiles() {
+            System.out.println("Creating Fake Files For Representation Purpose");
+            createEmptySystemVariablesFile(); 
+            createFakeDataFiles();
+
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // -----------------------------------------------Functions of main
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// Portal----------------------------------------------------------------------//
     // function to display options of the main portal
     static void displayOptionsMainPortal() {
         System.out.println("\n=== Menu ===");
@@ -317,36 +463,6 @@ public class Main {
                     break;
             }
         }
-    }
-
-    // Now we are making a function for admin login it works only if the user has
-    // the correct password
-    // and login Name.
-    static boolean isAdminPasswordCorrect() {
-        System.out.println("Enter your Password: ");
-        String enteredAdminPassword = scanner.nextLine();
-        return enteredAdminPassword.equals(adminPassword);
-    }
-
-    public static boolean passwordChecker() {
-        // Checking if the password is correct
-        int loginTries = 1;
-        while (!isAdminPasswordCorrect()) {
-            System.out.println("Wrong Password! " + (5 - loginTries) + " tries left.");
-
-            if (loginTries == 5) {
-                System.out.println(
-                        "You have entered the wrong password " + loginTries + " times, returning to Main Menu");
-
-                return false; // Exit the method to avoid the unnecessary check below
-            }
-            loginTries++;
-
-        }
-
-        // This code is reached only if the password is correct
-        System.out.println("Password is Correct");
-        return true;
     }
 
     // This is the admin portal. It has the ability to add and remove doctors,
@@ -426,102 +542,6 @@ public class Main {
                 }
             }
         }
-    }
-
-    /*
-     * Functions to Generate ID are below:
-     * These include checking if a file for Entity Numbers exits and adding initial
-     * 0 values in a newly created file
-     * Reading the file and writing values back in it
-     */
-
-    // checking if systemVariablesFile is created, if not, then it is created with
-    // initial
-    // values staring from 0
-    public static void createEmptySystemVariablesFile() {
-        try {
-            // Check if the file doesn't exist, create it
-            if (!systemVariablesFilePath.exists()) {
-                systemVariablesFilePath.createNewFile();
-                FileOutputStream fos = new FileOutputStream(systemVariablesFilePath, false);
-                PrintStream ps = new PrintStream(fos);
-
-                // Storing 0 values in new file
-                for (int i = 0; i < numberOfEntitiesArray.length; i++) {
-                    ps.println(0);
-                }
-                ps.close();
-                fos.close();
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    // It is to be called by Updating thread only, precondition for this is to have
-    // the empty file., it overwrites the previous file
-    public static void updateSystemVariablesFile() {
-        try (FileOutputStream fos = new FileOutputStream(systemVariablesFilePath, false)) {
-            PrintStream ps = new PrintStream(fos);
-            ps.println(adminPassword);
-            for (int i = 0; i < numberOfEntitiesArray.length; i++) {
-                ps.println(numberOfEntitiesArray[i]);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    // Load the system variables like the total number of entites and admin password
-    public static void loadSystemVariables() {
-        try (FileReader fr = new FileReader(systemVariablesFilePath);
-                Scanner inputGetter = new Scanner(fr)) {
-
-            int i = 0;
-            while (inputGetter.hasNextLine() && i < numberOfEntitiesArray.length) {
-                if (i == 0) {
-                    adminPassword = inputGetter.nextLine();
-                } else {
-                    numberOfEntitiesArray[i] = Integer.parseInt(inputGetter.nextLine());
-                }
-                ++i;
-            }
-        } catch (Exception e) {
-            System.out.println("Something went wrong: " + e.getMessage());
-        }
-    }
-
-    private static String generateID(String entityType) {
-
-        switch (entityType) {
-            case "Doctor":
-                numberOfEntitiesArray[0] += 1;
-                updateDatabaseFile("Doctor");
-                return "DOC-" + String.format("%03d", numberOfEntitiesArray[0]);
-            case "Receptionist":
-                numberOfEntitiesArray[1] += 1;
-                updateDatabaseFile("Receptionist");
-                return "REP-" + String.format("%03d", numberOfEntitiesArray[1]);
-            case "Ward":
-                numberOfEntitiesArray[2] += 1;
-                updateDatabaseFile("Ward");
-                return "W-" + String.format("%03d", numberOfEntitiesArray[2]);
-            case "Patient":
-                numberOfEntitiesArray[3] += 1;
-                updateDatabaseFile("Patient");
-                return "P-" + String.format("%03d", numberOfEntitiesArray[3]);
-            case "Diagnosis":
-                numberOfEntitiesArray[4] += 1;
-                updateDatabaseFile("Diagnosis");
-                return "DIA-" + String.format("%03d", numberOfEntitiesArray[4]);
-            case "Appointment":
-                numberOfEntitiesArray[5] += 1;
-                updateDatabaseFile("Appointment");
-                return "APT-" + String.format("%03d", numberOfEntitiesArray[5]);
-            default:
-                return "";
-        }
-
     }
 
     // --------------------------------------------------------------------------------------------------------------------//
@@ -621,9 +641,8 @@ public class Main {
         // reading everytime??
         doctorsList.add(newDoctor);
 
-        // Adding the doctor to the file data
-        String docData = Arrays.toString(newDoctor);
-        storeDoctorToFile(docData);
+        // Adding the doctor to the file data 
+        updateDatabaseFile("Doctor");
         System.out.println("New doctor added successfully.");
     }
 
@@ -696,7 +715,7 @@ public class Main {
         if (doctorIndexToEdit != -1) {
             editDoctorDetails(doctorIndexToEdit, doctorsList, scanner);
             // Update the file after editing
-            updateDatabaseFile(DOCTORS_FILENAME, doctorsList);
+            updateDatabaseFileThread(DOCTORS_FILENAME, doctorsList);
             System.out.println("Details of Doctor '" + doctorNameToEdit + "' have been edited.");
         } else {
             System.out.println("Doctor with name '" + doctorNameToEdit + "' not found in the database.");
@@ -714,7 +733,7 @@ public class Main {
         if (doctorIndexToEdit != -1) {
             editDoctorDetails(doctorIndexToEdit, doctorsList, scanner);
             // Update the file after editing
-            updateDatabaseFile(DOCTORS_FILENAME, doctorsList);
+            updateDatabaseFileThread(DOCTORS_FILENAME, doctorsList);
             System.out.println("Details of Doctor '" + doctorIdToEdit + "' have been edited.");
         } else {
             System.out.println("Doctor with ID '" + doctorIdToEdit + "' not found in the database.");
@@ -892,7 +911,7 @@ public class Main {
         return -1;
     }
 
-    public static void updateDatabaseFile(String filePath, ArrayList<String[]> dataList) {
+    public static void updateDatabaseFileThread(String filePath, ArrayList<String[]> dataList) {
         Runnable r2 = () -> {
             try {
                 FileWriter docFWriter = new FileWriter(filePath, false);
@@ -907,6 +926,23 @@ public class Main {
         };
         Thread t = new Thread(r2);
         t.start();
+
+    }
+
+    public static void updateDatabaseFileSync(String filePath, ArrayList<String[]> dataList) {
+        {
+            try {
+                FileWriter docFWriter = new FileWriter(filePath, false);
+                PrintWriter pw = new PrintWriter(docFWriter);
+                for (String[] data : dataList) {
+                    pw.println(Arrays.toString(data));
+                }
+                pw.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        ;
 
     }
 
