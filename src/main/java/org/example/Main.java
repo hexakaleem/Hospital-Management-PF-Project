@@ -97,9 +97,10 @@ public class Main
 
 
 			System.out.print( "Enter your choice: " );
-			while(!scanner.hasNextInt()){
+			while (!scanner.hasNextInt())
+			{
 				scanner.nextLine();
-				System.out.println("Please Enter only numbers");
+				System.out.println( "Please Enter only numbers" );
 				System.out.print( "Enter your choice: " );
 			}
 			choice = scanner.nextInt();
@@ -156,7 +157,6 @@ public class Main
 				subMenu.add( "Remove Doctor" );
 				subMenu.add( "Display All Doctors" );
 				subMenu.add( "Register New Receptionist" );
-				subMenu.add( "Edit Existing Receptionist" );
 				subMenu.add( "Remove Receptionist" );
 				subMenu.add( "Display All Receptionist" );
 				subMenu.add( "Add Ward" );
@@ -203,11 +203,6 @@ public class Main
 				subMenu.add( "Remove Doctor By Name" );
 				subMenu.add( "Remove Doctor By ID" );
 				break;
-			case "Edit Existing Receptionist":
-				subMenu.add( "Edit Existing Receptionist" );
-				subMenu.add( "Edit Receptionist By Name" );
-				subMenu.add( "Edit Receptionist By ID" );
-				break;
 			case "Remove Receptionist":
 				subMenu.add( "Remove Receptionist" );
 				subMenu.add( "Remove Receptionist By Name" );
@@ -237,6 +232,7 @@ public class Main
 				subMenu.add( "Display All Wards" );
 				subMenu.add( "Filter Wards By Name" );
 				break;
+
 		}
 
 		return subMenu;
@@ -256,32 +252,23 @@ public class Main
 			case "Register New Doctor":
 				registerNewDoctor();
 				break;
-			case "Edit Doctor By Name":
-				editDoctorByName();
+			case "Edit Existing Doctor":
+				handleEditDoctorDetailsMenu();
 				break;
-			case "Edit Doctor By ID":
-				editDoctorByID();
-				break;
-			case "Get Doctor Details By Name":
-				getDoctorDetails();
-				break;
-			case "Get Doctor Details By ID":
-				getDoctorDetails();
+			case "Get Doctor Details":
+				handleGetDoctorDetails();
 				break;
 			case "Remove Doctor":
-				removeDoctor();
+				handleRemoveDoctor();
 				break;
 			case "Display All Doctors":
-				displayAllDoctors();
+				handleDisplayAllDoctors();
 				break;
 			case "Register New Receptionist":
-				registerNewReceptionist();
-				break;
-			case "Edit Existing Receptionist":
-				editExistingReceptionist();
+				handleRegisterNewReceptionist();
 				break;
 			case "Remove Receptionist":
-				removeReceptionist();
+				handleRemoveReceptionist();
 				break;
 			case "Display All Receptionist":
 				displayAllReceptionists();
@@ -338,45 +325,36 @@ public class Main
 		return false;
 	}
 
-	private static void handleDoctorSection()
-	{
-		// Your logic for handling Doctor's Section
-	}
-
-	private static void handleReceptionistSection()
-	{
-		// Your logic for handling Receptionist's Section
-	}
 
 	private static void registerNewDoctor()
 	{
 
-		System.out.print(" You are Registering a new Doctor, Enter -1 anytime to discard the process \n");
-		System.out.print("Enter doctor name: ");
+		System.out.print( " You are Registering a new Doctor, Enter -1 anytime to discard the process \n" );
+		System.out.print( "Enter doctor name: " );
 		String name = scanner.nextLine();
-		if(name.trim().equals( "-1" )) return;
-		System.out.print("Enter doctor`s shift start time (e.g 10AM/23hrs): ");
+		if (name.trim().equals( "-1" )) return;
+		System.out.print( "Enter doctor`s shift start time (e.g 10AM): " );
 		String timingStart = scanner.nextLine();
-		if(timingStart.trim().equals( "-1" )) return;
-		System.out.print("Enter doctor`s shift end time(e.g 3PM): ");
+		if (timingStart.trim().equals( "-1" )) return;
+		System.out.print( "Enter doctor`s shift end time(e.g 3PM): " );
 		String timingEnd = scanner.nextLine();
-		if(timingEnd.trim().equals( "-1" )) return;
-		System.out.print("Enter doctor ward(e.g Cardiology): ");
+		if (timingEnd.trim().equals( "-1" )) return;
+		System.out.print( "Enter doctor ward(e.g Cardiology): " );
 		String ward = scanner.nextLine();
-		if(ward.trim().equals( "-1" )) return;
-		System.out.print("Enter doctor specialty(e.g Cardiologist): ");
+		if (ward.trim().equals( "-1" )) return;
+		System.out.print( "Enter doctor specialty(e.g Cardiologist): " );
 		String specialty = scanner.nextLine();
-		if(specialty.trim().equals( "-1" )) return;
-		System.out.print("Enter doctor username: ");
+		if (specialty.trim().equals( "-1" )) return;
+		System.out.print( "Enter doctor username: " );
 		String username = scanner.nextLine();
-		if(username.trim().equals( "-1" )) return;
-		System.out.print("Enter doctor password: ");
+		if (username.trim().equals( "-1" )) return;
+		System.out.print( "Enter doctor password: " );
 		String password = scanner.nextLine();
-		if(password.trim().equals( "-1" )) return;
+		if (password.trim().equals( "-1" )) return;
 
 		// Creating a new array to store doctor details
 		String[] newDoctor = {
-				generateID("Doctor"),
+				generateID( "Doctor" ),
 				name,
 				timingStart,
 				timingEnd,
@@ -386,116 +364,345 @@ public class Main
 				password,
 		};
 
-		doctorsList.add(newDoctor);
+		doctorsList.add( newDoctor );
 
 		// Adding the doctor to the file data
-		updateDatabaseFile("Doctor");
-		System.out.println("New doctor added successfully.");
+		updateDatabaseFile( "Doctor" );
+		System.out.println( "New doctor added successfully." );
 	}
-	public static void editDoctorByName(){
-		System.out.print("Enter the name of Doctor: ");
+
+	public static int getDoctorByNameInput( )
+	{
+		System.out.print( "Enter the Name: " );
 		String doctorNameToView = scanner.nextLine();
-		int index= getDoctorIndex(doctorNameToView);
-		if(index !=-1)
-			editDoctor(index);
-		else System.out.println("Doctor by the name "+ doctorNameToView +" not found.");
+		int index = getDoctorIndex( doctorNameToView );
+		if (index != -1)
+			return index;
+		else System.out.println( "Doctor by the name " + doctorNameToView + " not found." );
+		return -1;
 	}
-	public static void editDoctorByID(){
-		System.out.print("Enter the ID of Doctor: ");
-		int doctorIndexToView = scanner.nextInt();
+
+	public static int getDoctorByIDInput()
+	{
+		System.out.print( "Enter the ID: " );
+
+		while (!scanner.hasNextInt())
+		{
+			scanner.nextLine();
+			System.out.println( "Please Enter only numbers" );
+			System.out.print( "Enter your choice: " );
+		}
+		int doctorIdToView = scanner.nextInt();
 		scanner.nextLine();
-		int indexI= getDoctorIndex(doctorIndexToView);
-		if(indexI !=-1)
-			editDoctor(indexI);
-		else System.out.println("Doctor by the name "+ doctorIndexToView +" not found.");
+
+		int index = getDoctorIndex( doctorIdToView );
+		if (index != -1)
+			return index;
+		else System.out.println( "Doctor by the ID " + doctorIdToView + " not found." );
+		return -1;
 	}
+	public static int getReceptionistByNameInput()
+	{
+		System.out.print( "Enter the ID: " );
+
+		while (!scanner.hasNextInt())
+		{
+			scanner.nextLine();
+			System.out.println( "Please Enter only numbers" );
+			System.out.print( "Enter your choice: " );
+		}
+		int doctorIdToView = scanner.nextInt();
+		scanner.nextLine();
+
+		int index = getReceptionistIndex( doctorIdToView );
+		if (index != -1)
+			return index;
+		else System.out.println( "Doctor by the ID " + doctorIdToView + " not found." );
+		return -1;
+	}
+
+	private static void handleEditDoctorDetailsMenu()
+	{
+		showNameIDSelectionMenu("Edit", "Doctor");
+		int editOption = scanner.nextInt();
+		scanner.nextLine();
+
+		switch (editOption)
+		{
+			case 0:
+				return;
+			case 1:
+				editDoctorByName();
+				break;
+			case 2:
+				editDoctorByID();
+				break;
+			default:
+				System.out.println( "Invalid edit option. No changes made." );
+		}
+	}
+
+	public static void editDoctorByName()
+	{
+		int index = getDoctorByNameInput();
+		if (index != -1)
+			editDoctor( index );
+	}
+
+	public static void editDoctorByID()
+	{
+		int index = getDoctorByIDInput();
+		if (index != -1)
+			editDoctor( index );
+	}
+
 	private static void editDoctor(int index)
 	{
 
-		String[] doctorDetails = doctorsList.get(index);
-		System.out.println("Current Details of Doctor '" +index +"': " +Arrays.toString(doctorDetails));
+		String[] doctorDetails = doctorsList.get( index );
+		System.out.println( "Current Details of Doctor '" + index + "': " + Arrays.toString( doctorDetails ) );
 
-		System.out.println("\nSelect the option to edit:");
-		System.out.println("1. Edit Doctor Name");
-		System.out.println("2. Edit Doctor Start Time");
-		System.out.println("3. Edit Doctor End Time");
-		System.out.println("4. Edit Doctor Ward");
-		System.out.println("5. Edit Doctor Specialty");
-		System.out.println("6. Cancel Operation");
-		System.out.print("Enter your choice: ");
+
+		System.out.println( "\nSelect the option to edit:" );
+		System.out.println( "1. Edit Doctor Name" );
+		System.out.println( "2. Edit Doctor Start Time" );
+		System.out.println( "3. Edit Doctor End Time" );
+		System.out.println( "4. Edit Doctor Ward" );
+		System.out.println( "5. Edit Doctor Specialty" );
+		System.out.println( "6. Cancel Operation" );
+		System.out.print( "Enter your choice: " );
 		int editChoice = scanner.nextInt();
 		scanner.nextLine();
 
-		switch (editChoice) {
+		switch (editChoice)
+		{
 			case 1:
-				System.out.print("Enter new doctor name: ");
+				System.out.print( "Enter new doctor name: " );
 				String newName = scanner.nextLine();
 				doctorDetails[1] = newName;
 				break;
 			case 2:
-				System.out.print("Enter new shift start time: ");
+				System.out.print( "Enter new shift start time: " );
 				String newStartTime = scanner.nextLine();
 				doctorDetails[2] = newStartTime;
 				break;
 			case 3:
-				System.out.print("Enter new shift end time: ");
+				System.out.print( "Enter new shift end time: " );
 				String newEndTime = scanner.nextLine();
 				doctorDetails[3] = newEndTime;
 				break;
 			case 4:
-				System.out.print("Enter new ward: ");
+				System.out.print( "Enter new ward: " );
 				String newWard = scanner.nextLine();
 				doctorDetails[4] = newWard;
 				break;
 			case 5:
-				System.out.print("Enter new specialty: ");
+				System.out.print( "Enter new specialty: " );
 				String newSpecialty = scanner.nextLine();
 				doctorDetails[5] = newSpecialty;
 				break;
 			case 6:
-				System.out.println("No changes made.");
+				System.out.println( "No changes made." );
 				return;
 
 			default:
-				System.out.println("Invalid edit choice. No changes made.");
+				System.out.println( "Invalid edit choice. No changes made." );
 		}
-		updateDatabaseFile("Doctor");
-		System.out.println("Details of Doctor '" +doctorDetails[0] +"' after edit: " +Arrays.toString(doctorDetails));
+		updateDatabaseFile( "Doctor" );
+		System.out.println( "Details of Doctor '" + doctorDetails[0] + "' after edit: " + Arrays.toString( doctorDetails ) );
 	}
 
-	private static void getDoctorDetails()
+	private static void handleGetDoctorDetails()
 	{
-		// Your logic for getting doctor details
+		showNameIDSelectionMenu("Show", "Doctor");
+		int option = scanner.nextInt();
+		scanner.nextLine();
+
+		switch (option)
+		{
+			case 0:
+				return;
+			case 1:
+				getDoctorDetailsByName();
+				break;
+			case 2:
+				getDoctorDetailsByID();
+				break;
+			default:
+				System.out.println( "Invalid edit option." );
+		}
 	}
 
-	private static void removeDoctor()
+	public static void getDoctorDetailsByName()
 	{
-		// Your logic for removing a doctor
+		int index = getDoctorByNameInput();
+		if (index != -1)
+			showDoctorDetails( index );
+	}
+	public static void getDoctorDetailsByID()
+	{
+		int index = getDoctorByIDInput();
+		if (index != -1)
+			showDoctorDetails( index );
+	}
+	private static void showDoctorDetails(int index)
+	{
+		String[] doctorDetails = doctorsList.get(index);
+		System.out.println( "Details of Doctor '" + doctorDetails[1] + "': " + Arrays.toString(doctorDetails));
 	}
 
-	private static void displayAllDoctors()
+	private static void handleRemoveDoctor()
 	{
-		// Your logic for displaying all doctors
+		showNameIDSelectionMenu("Remove", "Doctor");
+		int editOption = scanner.nextInt();
+		scanner.nextLine();
+
+		switch (editOption)
+		{
+			case 0:
+				return;
+			case 1:
+				removeDoctorByName();
+				break;
+			case 2:
+				removeDoctorByID();
+				break;
+			default:
+				System.out.println( "Invalid edit option. No changes made." );
+		}
+	}
+	public static void removeDoctorByName()
+	{
+		int index = getDoctorByNameInput();
+		if (index != -1)
+			removeDoctor( index );
+	}
+	public static void removeDoctorByID()
+	{
+		int index = getDoctorByIDInput();
+		if (index != -1)
+			removeDoctor( index );
+	}
+	private static void removeDoctor(int index)
+	{
+		doctorsList.remove(index);
+		updateDatabaseFile( "Doctor" );
+		System.out.println( "Doctor with ID '" + index + "' has been deleted.");
 	}
 
-	private static void registerNewReceptionist()
+	private static void handleDisplayAllDoctors()
 	{
-		// Your logic for registering a new receptionist
+		System.out.println("\nList of Doctors:");
+		System.out.printf("%-10s %-20s %-15s %-15s %-20s %-20s %-15s\n","Doctor ID","Doctor Name","Start Time",
+				"End Time",
+				"Ward",
+				"Specialty",
+				"Appointments Count");
+
+		for (String[] doctor : doctorsList) {
+			String doctorId = doctor[0];
+			String doctorName = doctor[1];
+			String startTime = doctor[2];
+			String endTime = doctor[3];
+			String ward = doctor[4];
+			String specialty = doctor[5];
+
+			// Count the number of appointments made by each doctor
+			long appointmentsCount = countAppointmentsForDoctor(doctorId);
+
+			System.out.printf(
+					"%-10s %-20s %-15s %-15s %-20s %-20s %-15s\n",
+					doctorId,
+					doctorName,
+					startTime,
+					endTime,
+					ward,
+					specialty,
+					appointmentsCount);
+		}
+	}
+	private static long countAppointmentsForDoctor(String doctorId) {
+		int count=0;
+		for(String[] appointment:appointmentsList){
+			if(appointment[2].equals(doctorId)) ++count;
+		}
+		return count;
 	}
 
-	private static void editExistingReceptionist()
+	private static void handleRegisterNewReceptionist()
 	{
-		// Your logic for editing an existing receptionist
+		System.out.print( " You are Registering a new Receptionist, Enter -1 anytime to discard the process \n" );
+		System.out.print( "Enter Receptionists name: " );
+		String name = scanner.nextLine();
+		if (name.trim().equals( "-1" )) return;
+		System.out.print( "Enter Receptionist`s usermane: " );
+		String username = scanner.nextLine();
+		if (username.trim().equals( "-1" )) return;
+		System.out.print( "Enter Receptionist`s password: " );
+		String password = scanner.nextLine();
+		if (password.trim().equals( "-1" )) return;
+
+
+		// Creating a new array to store receptionist details
+		String[] newReceptionist = {
+				generateID( "Receptionist" ),
+				name,
+				username,
+				password,
+		};
+
+		receptionistsList.add( newReceptionist );
+
+		// Adding the doctor to the file data
+		updateDatabaseFile( "Receptionist" );
+		System.out.println( "New Receptionist added successfully." );
+
 	}
 
-	private static void removeReceptionist()
+	private static void handleRemoveReceptionist()
 	{
-		// Your logic for removing a receptionist
+		showNameIDSelectionMenu("Remove", "Receptionist");
+		int editOption = scanner.nextInt();
+		scanner.nextLine();
+
+		switch (editOption)
+		{
+			case 0:
+				return;
+			case 1:
+				removeReceptionistByName();
+				break;
+			case 2:
+				removeReceptionistByID();
+				break;
+			default:
+				System.out.println( "Invalid edit option. No changes made." );
+		}
 	}
+	public static void removeReceptionistByName()
+	{
+		int index = getReceptionistByNameInput();
+		if (index != -1)
+			removeReceptionist( index );
+	}
+	public static void removeReceptionistByID()
+	{
+		int index = getReceptionistByIDInput();
+		if (index != -1)
+			removeReceptionist( index );
+	}
+	private static void removeReceptionist(int index)
+	{
+		receptionistsList.remove(index);
+		updateDatabaseFile( "Receptionist" );
+		System.out.println( "Receptionist with ID '" + index + "' has been deleted.");
+	}
+
+
 
 	private static void displayAllReceptionists()
 	{
-		// Your logic for displaying all receptionists
+
 	}
 
 	private static void addWard()
@@ -532,25 +739,34 @@ public class Main
 			System.out.print( "How many records to make? :" );
 		}
 		int records = scanner.nextInt();
-		createFakeDataFiles(records);
+		createFakeDataFiles( records );
 	}
-	public static int getDoctorIndex(String name) {
-		for (int i = 0; i < doctorsList.size(); i++) {
-			if (name.equals(doctorsList.get(i)[1])) {
+
+	public static int getDoctorIndex(String name)
+	{
+		for (int i = 0; i < doctorsList.size(); i++)
+		{
+			if (name.equals( doctorsList.get( i )[1] ))
+			{
 				return i;
 			}
 		}
 		return -1;
 	}
-	public static int getDoctorIndex(int id) {
-		String did= "DOC-" + id;
-		for (int i = 0; i < doctorsList.size(); i++) {
-			if (did.equals(doctorsList.get(i)[0])) {
+
+	public static int getDoctorIndex(int id)
+	{
+		String did = "DOC-" + id;
+		for (int i = 0; i < doctorsList.size(); i++)
+		{
+			if (did.equals( doctorsList.get( i )[0] ))
+			{
 				return i;
 			}
 		}
 		return -1;
 	}
+
 	private static void getPatientHistory()
 	{
 		// Your logic for getting patient history
@@ -594,6 +810,22 @@ public class Main
 	private static void getAllDoctors()
 	{
 		// Your logic for getting all doctors
+	}
+
+	//--------------------------------------------------------//
+	public static void showNameIDSelectionMenu(String  operation, String entity){
+		System.out.printf( "\nSelect the option to %s %s:",operation,entity);
+		System.out.printf( "1. %s by Name\n" , operation);
+		System.out.printf( "2. %s by ID\n", operation );
+		System.out.print( "0. Return back " );
+		System.out.print( "Enter your choice: " );
+		while (!scanner.hasNextInt())
+		{
+			scanner.nextLine();
+			System.out.println( "Only number are allowed!" );
+			System.out.print( "Enter your choice: " );
+		}
+
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -960,7 +1192,7 @@ How is the handling of global variables like number of entites and admin passwor
 		String username = RandomStringUtils.randomAlphanumeric( 8 );
 		String password = RandomStringUtils.randomAlphanumeric( 8 );
 
-		String[] dummyReceptionist = {receptionistID, receptionistName,username, password};
+		String[] dummyReceptionist = {receptionistID, receptionistName, username, password};
 		receptionistsList.add( dummyReceptionist );
 	}
 
@@ -1024,7 +1256,7 @@ How is the handling of global variables like number of entites and admin passwor
 		}
 		else
 		{
-			File dir = new File(DATABASE_DIR);
+			File dir = new File( DATABASE_DIR );
 			dir.mkdir();
 			setAdminCredentialsForTheFirstTime();
 			updateSystemVariablesFile();
