@@ -1,7 +1,6 @@
 [DOC-001, Doctor72, 9AM, 9PM, Ward31, Specialty42, OZfGuBqO, ugOZFNw6]
 [DOC-002, Doctor63, 5AM, 9PM, Ward66, Specialty40, ZWK8EbSW, 5kSJauin]
 [DOC-003, Doctor64, 7AM, 6PM, Ward85, Specialty52, rfVsgbiY, AFI0W4AD]
-[DOC-004, Doctor05, 3AM, 4PM, Ward37, Specialty28, 68eIkg2j, MbukdrWy]
 [DOC-005, Doctor57, 4AM, 5PM, Ward40, Specialty34, YEvNE2dP, UwIvygHn]
 [DOC-006, Doctor51, 0AM, 6PM, Ward81, Specialty23, 45rYEhMm, rYkneYG6]
 [DOC-007, Doctor60, 5AM, 3PM, Ward57, Specialty07, CJ2HoltZ, kc1fwSKe]

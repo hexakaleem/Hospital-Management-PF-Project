@@ -158,6 +158,7 @@ public class Main
 				subMenu.add( "Display All Doctors" );
 				subMenu.add( "Register New Receptionist" );
 				subMenu.add( "Remove Receptionist" );
+				subMenu.add( "Edit Receptionist" );
 				subMenu.add( "Display All Receptionist" );
 				subMenu.add( "Add Ward" );
 				subMenu.add( "Edit Ward" );
@@ -182,51 +183,6 @@ public class Main
 				subMenu.add( "Submit Patient To Ward" );
 				subMenu.add( "Check Doctor's Availability" );
 				subMenu.add( "Get All Doctors" );
-				break;
-			case "Edit Existing Doctor":
-				subMenu.add( "Edit Existing Doctor" );
-				subMenu.add( "Edit Doctor By Name" );
-				subMenu.add( "Edit Doctor By ID" );
-				break;
-			case "Display All Doctors":
-				subMenu.add( "Display All Doctors" );
-				subMenu.add( "Sort Doctors By Name" );
-				subMenu.add( "Sort Doctors By ID" );
-				break;
-			case "Get Doctor Details":
-				subMenu.add( "Get Doctor Details" );
-				subMenu.add( "Get Doctor Details By Name" );
-				subMenu.add( "Get Doctor Details By ID" );
-				break;
-			case "Remove Doctor":
-				subMenu.add( "Remove Doctor" );
-				subMenu.add( "Remove Doctor By Name" );
-				subMenu.add( "Remove Doctor By ID" );
-				break;
-			case "Remove Receptionist":
-				subMenu.add( "Remove Receptionist" );
-				subMenu.add( "Remove Receptionist By Name" );
-				subMenu.add( "Remove Receptionist By ID" );
-				break;
-			case "Display All Receptionist":
-				subMenu.add( "Display All Receptionist" );
-				subMenu.add( "Sort Receptionist By Name" );
-				subMenu.add( "Sort Receptionist By ID" );
-				break;
-			case "Edit Ward":
-				subMenu.add( "Edit Ward" );
-				subMenu.add( "Edit Ward By Name" );
-				subMenu.add( "Edit Ward By ID" );
-				break;
-			case "Get Ward Details":
-				subMenu.add( "Get Ward Details" );
-				subMenu.add( "Get Ward By Name" );
-				subMenu.add( "Get Ward By ID" );
-				break;
-			case "Remove Ward":
-				subMenu.add( "Remove Ward" );
-				subMenu.add( "Remove Ward By Name" );
-				subMenu.add( "Remove Ward By ID" );
 				break;
 			case "Display All Wards":
 				subMenu.add( "Display All Wards" );
@@ -267,6 +223,9 @@ public class Main
 			case "Register New Receptionist":
 				handleRegisterNewReceptionist();
 				break;
+			case "Edit Receptionist":
+				handleEditReceptionistDetailsMenu();
+				break;
 			case "Remove Receptionist":
 				handleRemoveReceptionist();
 				break;
@@ -288,6 +247,7 @@ public class Main
 			case "Display All Wards":
 				displayAllWards();
 				break;
+				/// Doctor
 			case "Get Patient History":
 				getPatientHistory();
 				break;
@@ -371,55 +331,7 @@ public class Main
 		System.out.println( "New doctor added successfully." );
 	}
 
-	public static int getDoctorByNameInput( )
-	{
-		System.out.print( "Enter the Name: " );
-		String doctorNameToView = scanner.nextLine();
-		int index = getDoctorIndex( doctorNameToView );
-		if (index != -1)
-			return index;
-		else System.out.println( "Doctor by the name " + doctorNameToView + " not found." );
-		return -1;
-	}
 
-	public static int getDoctorByIDInput()
-	{
-		System.out.print( "Enter the ID: " );
-
-		while (!scanner.hasNextInt())
-		{
-			scanner.nextLine();
-			System.out.println( "Please Enter only numbers" );
-			System.out.print( "Enter your choice: " );
-		}
-		int doctorIdToView = scanner.nextInt();
-		scanner.nextLine();
-
-		int index = getDoctorIndex( doctorIdToView );
-		if (index != -1)
-			return index;
-		else System.out.println( "Doctor by the ID " + doctorIdToView + " not found." );
-		return -1;
-	}
-	public static int getReceptionistByNameInput()
-	{
-		System.out.print( "Enter the ID: " );
-
-		while (!scanner.hasNextInt())
-		{
-			scanner.nextLine();
-			System.out.println( "Please Enter only numbers" );
-			System.out.print( "Enter your choice: " );
-		}
-		int doctorIdToView = scanner.nextInt();
-		scanner.nextLine();
-
-		int index = getReceptionistIndex( doctorIdToView );
-		if (index != -1)
-			return index;
-		else System.out.println( "Doctor by the ID " + doctorIdToView + " not found." );
-		return -1;
-	}
 
 	private static void handleEditDoctorDetailsMenu()
 	{
@@ -444,14 +356,14 @@ public class Main
 
 	public static void editDoctorByName()
 	{
-		int index = getDoctorByNameInput();
+		int index = getEntityIndexByNameInput("Doctor", doctorsList);
 		if (index != -1)
 			editDoctor( index );
 	}
 
 	public static void editDoctorByID()
 	{
-		int index = getDoctorByIDInput();
+		int index = getEntityByIDInput("Doctor", doctorsList);
 		if (index != -1)
 			editDoctor( index );
 	}
@@ -535,13 +447,13 @@ public class Main
 
 	public static void getDoctorDetailsByName()
 	{
-		int index = getDoctorByNameInput();
+		int index = getEntityIndexByNameInput("Doctor", doctorsList);
 		if (index != -1)
 			showDoctorDetails( index );
 	}
 	public static void getDoctorDetailsByID()
 	{
-		int index = getDoctorByIDInput();
+		int index = getEntityByIDInput("Doctor", doctorsList);
 		if (index != -1)
 			showDoctorDetails( index );
 	}
@@ -573,13 +485,13 @@ public class Main
 	}
 	public static void removeDoctorByName()
 	{
-		int index = getDoctorByNameInput();
+		int index = getEntityIndexByNameInput("Doctor", doctorsList);
 		if (index != -1)
 			removeDoctor( index );
 	}
 	public static void removeDoctorByID()
 	{
-		int index = getDoctorByIDInput();
+		int index = getEntityByIDInput( "Doctor", doctorsList );
 		if (index != -1)
 			removeDoctor( index );
 	}
@@ -587,7 +499,7 @@ public class Main
 	{
 		doctorsList.remove(index);
 		updateDatabaseFile( "Doctor" );
-		System.out.println( "Doctor with ID '" + index + "' has been deleted.");
+		System.out.println( "Doctor has been deleted.");
 	}
 
 	private static void handleDisplayAllDoctors()
@@ -635,7 +547,7 @@ public class Main
 		System.out.print( "Enter Receptionists name: " );
 		String name = scanner.nextLine();
 		if (name.trim().equals( "-1" )) return;
-		System.out.print( "Enter Receptionist`s usermane: " );
+		System.out.print( "Enter Receptionist`s username: " );
 		String username = scanner.nextLine();
 		if (username.trim().equals( "-1" )) return;
 		System.out.print( "Enter Receptionist`s password: " );
@@ -681,13 +593,13 @@ public class Main
 	}
 	public static void removeReceptionistByName()
 	{
-		int index = getReceptionistByNameInput();
+		int index = getEntityIndexByNameInput( "Receptionist",receptionistsList );
 		if (index != -1)
 			removeReceptionist( index );
 	}
 	public static void removeReceptionistByID()
 	{
-		int index = getReceptionistByIDInput();
+		int index = getEntityIndex("Receptionist", receptionistsList);
 		if (index != -1)
 			removeReceptionist( index );
 	}
@@ -698,12 +610,105 @@ public class Main
 		System.out.println( "Receptionist with ID '" + index + "' has been deleted.");
 	}
 
+	private static void handleEditReceptionistDetailsMenu()
+	{
+		showNameIDSelectionMenu("Edit", "Receptionist");
+		int editOption = scanner.nextInt();
+		scanner.nextLine();
 
+		switch (editOption)
+		{
+			case 0:
+				return;
+			case 1:
+				editReceptionistByName();
+				break;
+			case 2:
+				editReceptionistByID();
+				break;
+			default:
+				System.out.println( "Invalid edit option. No changes made." );
+		}
+	}
 
-	private static void displayAllReceptionists()
+	public static void editReceptionistByName()
+	{
+		int index = getEntityIndexByNameInput("Receptionist", receptionistsList);
+		if (index != -1)
+			editReceptionist( index );
+	}
+
+	public static void editReceptionistByID()
+	{
+		int index = getEntityByIDInput("Receptionist", receptionistsList);
+		if (index != -1)
+			editReceptionist( index );
+	}
+
+	private static void editReceptionist(int index)
 	{
 
+		String[] receptionistsListDetails = receptionistsList.get( index );
+		System.out.println( "Current Details of Receptionist '" + index + "': " + Arrays.toString( receptionistsListDetails ) );
+
+
+		System.out.println( "\nSelect the option to edit:" );
+		System.out.println( "1. Edit Receptionist Name" );
+		System.out.println( "2. Edit Receptionist UserName" );
+		System.out.println( "3. Edit Receptionist Password" );
+		System.out.println( "0. Cancel Operation" );
+		System.out.print( "Enter your choice: " );
+		int editChoice = scanner.nextInt();
+		while (!scanner.hasNextInt())
+		{
+			scanner.nextLine();
+			System.out.println( "Please Enter only numbers" );
+			System.out.print( "Enter your choice: " );
+		}
+		scanner.nextLine();
+
+		switch (editChoice)
+		{
+			case 1:
+				System.out.print( "Enter new Receptionist name: " );
+				String newName = scanner.nextLine();
+				receptionistsListDetails[1] = newName;
+				break;
+			case 2:
+				System.out.print( "Enter new UserName: " );
+				String username = scanner.nextLine();
+				receptionistsListDetails[2] = username;
+				break;
+			case 3:
+				System.out.print( "Enter new Password for Receptionist: " );
+				String password = scanner.nextLine();
+				receptionistsListDetails[3] = password;
+				break;
+			case 0:
+				System.out.println( "No changes made." );
+				return;
+
+			default:
+				System.out.println( "Invalid edit choice. No changes made." );
+		}
+		updateDatabaseFile( "Doctor" );
+		System.out.println( "Details of Doctor '" + receptionistsListDetails[0] + "' after edit: " + Arrays.toString( receptionistsListDetails ) );
 	}
+
+	private static void displayAllReceptionists() {
+		System.out.println("\nList of Receptionists:");
+		System.out.printf("%-20s %-20s %-15s %-15s\n", "Receptionist ID", "Receptionist Name", "User Name", "Password");
+
+		for (String[] receptionists : receptionistsList) {
+			String receptionistId = receptionists[0];
+			String receptionistName = receptionists[1];
+			String receptionistUserName = receptionists[2];
+			String receptionistPassword = receptionists[2];
+
+			System.out.printf("%-20s %-20s %-15s %-15s\n", receptionistId, receptionistName,receptionistUserName, receptionistPassword);
+		}
+	}
+
 
 	private static void addWard()
 	{
@@ -742,30 +747,7 @@ public class Main
 		createFakeDataFiles( records );
 	}
 
-	public static int getDoctorIndex(String name)
-	{
-		for (int i = 0; i < doctorsList.size(); i++)
-		{
-			if (name.equals( doctorsList.get( i )[1] ))
-			{
-				return i;
-			}
-		}
-		return -1;
-	}
 
-	public static int getDoctorIndex(int id)
-	{
-		String did = "DOC-" + id;
-		for (int i = 0; i < doctorsList.size(); i++)
-		{
-			if (did.equals( doctorsList.get( i )[0] ))
-			{
-				return i;
-			}
-		}
-		return -1;
-	}
 
 	private static void getPatientHistory()
 	{
@@ -814,7 +796,7 @@ public class Main
 
 	//--------------------------------------------------------//
 	public static void showNameIDSelectionMenu(String  operation, String entity){
-		System.out.printf( "\nSelect the option to %s %s:",operation,entity);
+		System.out.printf( "\nSelect the option to %s %s: \n",operation,entity);
 		System.out.printf( "1. %s by Name\n" , operation);
 		System.out.printf( "2. %s by ID\n", operation );
 		System.out.print( "0. Return back " );
@@ -826,6 +808,37 @@ public class Main
 			System.out.print( "Enter your choice: " );
 		}
 
+	}
+
+	public static int getEntityIndexByNameInput(String entityName, ArrayList<String[]> list )
+	{
+		System.out.print( "Enter the Name: " );
+		String nameToView = scanner.nextLine();
+		int index = getEntityIndex( nameToView , list);
+		if (index != -1)
+			return index;
+		else System.out.println( entityName+ "by the name " + nameToView + " not found." );
+		return -1;
+	}
+
+	public static int getEntityByIDInput(String entityName, ArrayList<String[]> list)
+	{
+		System.out.print( "Enter the ID: " );
+
+		while (!scanner.hasNextInt())
+		{
+			scanner.nextLine();
+			System.out.println( "Please Enter only numbers" );
+			System.out.print( "Enter your choice: " );
+		}
+		int idToView = scanner.nextInt();
+		scanner.nextLine();
+
+		int index = getEntityIndex( idToView, list );
+		if (index != -1)
+			return index;
+		else System.out.println( entityName+ " by the ID " + idToView + " not found." );
+		return -1;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -963,6 +976,48 @@ public class Main
 		return false;
 	}
 
+	public static int getEntityIndex(String name, ArrayList<String[]>  list)
+	{
+		for (int i = 0; i < list.size(); i++)
+		{
+			if (name.equals( list.get( i )[1] ))
+			{
+				return i;
+			}
+		}
+		return -1;
+	}
+	public static String getEntityID(String entityName, int id){
+		switch (entityName)
+		{
+			case "Doctor":
+				return "DOC-" + String.format( "%03d", id );
+			case "Receptionist":
+				return "REP-" + String.format( "%03d", id );
+			case "Ward":
+				return "W-" + String.format( "%03d", id );
+			case "Patient":
+				return "P-" + String.format( "%03d", id );
+			case "Diagnosis":
+				return "DIA-" + String.format( "%03d", id );
+			case "Appointment":
+				return "APT-" + String.format( "%03d", id );
+			default:
+				return "";
+		}
+	}
+	public static int getEntityIndex(int id, ArrayList<String[]>  list)
+	{
+		String did = "DOC-" + id;
+		for (int i = 0; i < doctorsList.size(); i++)
+		{
+			if (did.equals( doctorsList.get( i )[0] ))
+			{
+				return i;
+			}
+		}
+		return -1;
+	}
 /*
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 How is the handling of global variables like number of entites and admin password and username is handled>?
@@ -983,22 +1038,22 @@ How is the handling of global variables like number of entites and admin passwor
 		{
 			case "Doctor":
 				numberOfEntitiesArray[0] += 1;
-				return "DOC-" + String.format( "%03d", numberOfEntitiesArray[0] );
+				return getEntityID("Doctor", numberOfEntitiesArray[0]);
 			case "Receptionist":
 				numberOfEntitiesArray[1] += 1;
-				return "REP-" + String.format( "%03d", numberOfEntitiesArray[1] );
+				return getEntityID("Receptionist", numberOfEntitiesArray[1]);
 			case "Ward":
 				numberOfEntitiesArray[2] += 1;
-				return "W-" + String.format( "%03d", numberOfEntitiesArray[2] );
+				return getEntityID("Ward", numberOfEntitiesArray[2]);
 			case "Patient":
 				numberOfEntitiesArray[3] += 1;
-				return "P-" + String.format( "%03d", numberOfEntitiesArray[3] );
+				return getEntityID("Ward", numberOfEntitiesArray[3]);
 			case "Diagnosis":
 				numberOfEntitiesArray[4] += 1;
-				return "DIA-" + String.format( "%03d", numberOfEntitiesArray[4] );
+				return getEntityID("Diagnosis", numberOfEntitiesArray[4]);
 			case "Appointment":
 				numberOfEntitiesArray[5] += 1;
-				return "APT-" + String.format( "%03d", numberOfEntitiesArray[5] );
+				return getEntityID("Appointment", numberOfEntitiesArray[5]);
 			default:
 				return "";
 		}
