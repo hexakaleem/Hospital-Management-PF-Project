@@ -299,7 +299,15 @@ public class Main {
         System.out.println("3. Check Upcoming Appointments");
         System.out.println("4. Return to Main Menu");
     }
-   
+    static void displayOptionsReceptionistPortal() {
+        System.out.println("\n=== Receptionist Portal Menu ===");
+        System.out.println("1. Register New Patient");
+        System.out.println("2. Schedule Appointment");
+        System.out.println("3. View All Patients");
+        System.out.println("4. Return to Main Menu");
+    }
+
+
     // main portal to ask the user to be directed to.
     public static void mainPortal() {
         boolean flag = true;
@@ -314,10 +322,11 @@ public class Main {
                     break;
                 case 2:
                     // Navigate to Doctors PortalA
-                    DoctorsPortal();
+                    ReceptionistPortal();
                     break;
                 case 3:
-                    // Navigate to the case statement handling the receptionist portal
+                    DoctorsPortal();
+
                     break;
                 case 4:
                     flag = false;
@@ -435,6 +444,68 @@ public class Main {
                         System.out.println("Invalid choice");
                 }
             }
+        }
+    }
+    private static void registerNewPatient() {
+        System.out.println("You are Registering a new Patient, Enter -1 anytime to discard the process");
+
+        System.out.print("Enter patient name: ");
+        String name = scanner.nextLine();
+        if (name.trim().equals("-1")) return;
+
+        System.out.print("Enter patient gender: ");
+        String gender = scanner.nextLine();
+        if (gender.trim().equals("-1")) return;
+
+        System.out.print("Enter patient age: ");
+        String age = scanner.nextLine();
+        if (age.trim().equals("-1")) return;
+
+        System.out.print("Enter patient contact: ");
+        String contact = scanner.nextLine();
+        if (contact.trim().equals("-1")) return;
+
+        // Creating a new array to store patient details
+        String[] newPatient = {
+                generateID("Patient"),
+                name,
+                gender,
+                age,
+                contact
+        };
+
+        patientsList.add(newPatient);
+
+        // Adding the patient to the file data
+        updateDatabaseFile("Patient");
+        System.out.println("New patient added successfully.");
+    }
+
+    public static void ReceptionistPortal() {
+        displayOptionsReceptionistPortal();
+        System.out.print("Enter your choice: ");
+        int choiceReceptionistPortal = scanner.nextInt();
+        scanner.nextLine(); // Consume the newline character
+
+        switch (choiceReceptionistPortal) {
+            case 1:
+                System.out.println("You selected: Register New Patient");
+                registerNewPatient();
+                break;
+//            case 2:
+//                System.out.println("You selected: Schedule Appointment");
+//                scheduleAppointment(appointmentsList, patientsList, doctorsList, scanner);
+//                break;
+            case 3:
+                System.out.println("You selected: View All Patients");
+                displayAllPatients(patientsList);
+                break;
+            case 4:
+                System.out.println("You selected: Return to Main Menu");
+                mainPortal();
+                break;
+            default:
+                System.out.println("Invalid choice");
         }
     }
 
@@ -689,6 +760,21 @@ public class Main {
                     ward, specialty, appointmentsCount);
         }
     }
+    private static void displayAllPatients(ArrayList<String[]> patientsList) {
+        System.out.println("\nList of Patients:");
+        System.out.printf("%-15s %-20s %-10s %-5s %-15s\n", "Patient ID", "Patient Name", "Gender", "Age", "Contact");
+
+        for (String[] patient : patientsList) {
+            String patientId = patient[0];
+            String patientName = patient[1];
+            String gender = patient[2];
+            String age = patient[3];
+            String contact = patient[4];
+
+            System.out.printf("%-15s %-20s %-10s %-5s %-15s\n", patientId, patientName, gender, age, contact);
+        }
+    }
+
 
     // Helper method to count the number of appointments made by a specific doctor
     private static long countAppointmentsForDoctor(ArrayList<String[]> appointmentsList, String doctorId) {
