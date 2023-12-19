@@ -834,7 +834,7 @@ public class Main
 		int idToView = scanner.nextInt();
 		scanner.nextLine();
 
-		int index = getEntityIndex( idToView, list );
+		int index = getEntityIndex( entityName, idToView, list );
 		if (index != -1)
 			return index;
 		else System.out.println( entityName+ " by the ID " + idToView + " not found." );
@@ -1006,12 +1006,14 @@ public class Main
 				return "";
 		}
 	}
-	public static int getEntityIndex(int id, ArrayList<String[]>  list)
-	{
-		String did = "DOC-" + id;
-		for (int i = 0; i < doctorsList.size(); i++)
+	public static int getEntityIndex(String entityName,int id, ArrayList<String[]>  list)
+	{    
+
+		String did = getEntityID(entityName,id);
+		System.out.println("\nID: "+did);
+		for (int i = 0; i < list.size(); i++)
 		{
-			if (did.equals( doctorsList.get( i )[0] ))
+			if (did.equals( list.get( i )[0] ))
 			{
 				return i;
 			}
