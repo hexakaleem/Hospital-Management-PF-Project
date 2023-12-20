@@ -4,6 +4,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 
 import java.io.*;
+import java.time.LocalTime;
 import java.util.*;
 
 
@@ -1089,6 +1090,19 @@ public class Main
 	}
 
 	//--------------------------------------------------------//
+	///Helper Fucntions for the the main tasks
+
+	public static boolean isTimeInRange(String time, String startTime, String endTime) {
+		LocalTime timeToCheck = LocalTime.parse(time);
+		LocalTime start = LocalTime.parse(startTime);
+		LocalTime end = LocalTime.parse(endTime);
+
+		if (start.isAfter(end)) {
+			return timeToCheck.isAfter(start) || timeToCheck.isBefore(end);
+		} else {
+			return timeToCheck.isAfter(start) && timeToCheck.isBefore(end);
+		}
+	}
 	public static void showNameIDSelectionMenu(String operation, String entity)
 	{
 		System.out.printf( "\nSelect the option to %s %s: \n", operation, entity );
@@ -1137,8 +1151,10 @@ public class Main
 			System.out.print( "Enter the ID: " );
 			idToView = scanner.nextLine();
 		}
-
-		int idInteger = Integer.parseInt( idToView.split( "-" )[1] );
+		if(idToView.split( "-" ).length>0){
+			idToView=idToView.split( "-" )[1];
+		}
+		int idInteger = Integer.parseInt( idToView );
 		int index = getEntityIndex( entityName, idInteger, list );
 		if (index != -1)
 			return index;
