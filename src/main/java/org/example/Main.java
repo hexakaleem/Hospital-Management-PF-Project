@@ -46,7 +46,8 @@ public class Main
 		add( "Doctor's Section" );
 		add( "Receptionist's Section" );
 	}};
-	// { numberOfDoctors, numberOfReceptionists, numberOfWards, numberOfPatients,
+
+	// { adminUserName, adminPassword, numberOfDoctors, numberOfReceptionists, numberOfWards, numberOfPatients,
 	// numberOfDiagnosis, numberOfAppointments }
 	//For taking into account how many entities have got registered so far, so whenever new entity gets registered,
 	//its id will be generated uniquely by incrementing old number
@@ -246,7 +247,7 @@ public class Main
 				break;
 			/// Doctor
 			case "Get Patient History":
-				getPatientHistory();
+				handleGetPatientHistory();
 				break;
 			case "Add Diagnosis":
 				addDiagnosis();
@@ -258,7 +259,7 @@ public class Main
 				addPatient();
 				break;
 			case "Get Patient Details":
-				getPatientDetails();
+				displayAllPatientDetails();
 				break;
 			case "Edit Patient Details":
 				handleEditPatientDetailsMenu();
@@ -368,7 +369,7 @@ public class Main
 
 	public static void editDoctorByID()
 	{
-		int index = getEntityByIDInput( "Doctor", doctorsList );
+		int index = getEntityIndexByIDInput( "Doctor", doctorsList );
 		if (index != -1)
 			editDoctor( index );
 	}
@@ -459,7 +460,7 @@ public class Main
 
 	public static void getDoctorDetailsByID()
 	{
-		int index = getEntityByIDInput( "Doctor", doctorsList );
+		int index = getEntityIndexByIDInput( "Doctor", doctorsList );
 		if (index != -1)
 			showDoctorDetails( index );
 	}
@@ -500,7 +501,7 @@ public class Main
 
 	public static void removeDoctorByID()
 	{
-		int index = getEntityByIDInput( "Doctor", doctorsList );
+		int index = getEntityIndexByIDInput( "Doctor", doctorsList );
 		if (index != -1)
 			removeDoctor( index );
 	}
@@ -657,7 +658,7 @@ public class Main
 
 	public static void editReceptionistByID()
 	{
-		int index = getEntityByIDInput( "Receptionist", receptionistsList );
+		int index = getEntityIndexByIDInput( "Receptionist", receptionistsList );
 		if (index != -1)
 			editReceptionist( index );
 	}
@@ -827,7 +828,7 @@ public class Main
 
 	public static void removeWardByID()
 	{
-		int index = getEntityByIDInput( "Ward", wardsList );
+		int index = getEntityIndexByIDInput( "Ward", wardsList );
 		if (index != -1)
 			handleRemoveWard( index );
 	}
@@ -870,7 +871,7 @@ public class Main
 
 	public static void getWardDetailsByID()
 	{
-		int index = getEntityByIDInput( "Ward", wardsList );
+		int index = getEntityIndexByIDInput( "Ward", wardsList );
 		if (index != -1)
 			showWardDetails( index );
 	}
@@ -881,27 +882,87 @@ public class Main
 		System.out.println( "Details of Ward '" + wardDetails[1] + "': " + Arrays.toString( wardDetails ) );
 	}
 
-	//Ward functions for admin menu have been added
+
 //----------------------------------------------------------------------------------------------------------------//
 
 
-	private static void optionCreateFakeFiles()
-	{
-		System.out.print( "How many records to make? :" );
-		while (!scanner.hasNextInt())
-		{
-			System.out.println( "Invalid Input, Please Enter only numbers " );
-			System.out.print( "How many records to make? :" );
+
+
+/*	function to display patient history by taking the ID and search for appointments and diagnosis of patients and
+	displaying them
+
+	patientsList:
+	['Patient ID', 'Patient Name' , 'Gender','Age','Contact']
+
+	appointmentsList:
+	['Appointment ID', 'Patient ID' , 'Doctor ID','Time Start','Time End']
+
+	diagnosisList:
+	['Diagnosis ID','Patient ID','DoctorID','Prescriptions','Diagnosis','Appointment ID']
+*/
+
+		//Handle to display options to for
+
+	private static void getPatientHistory(int index){
+		//Index of IDs of the patients in the different Lists:
+		final int patientIDIndex = 0;
+		final int appointmentIDIndex = 1;
+		final int diagnosisArrayIDIndex = 1;
+
+
+		//Taking patients ID by using index
+		//Displaying patient details using index
+		getPatientDetails(index);
+
+		String[] patientDetails = patientsList.get(index);
+		String patientID =  patientDetails[patientIDIndex];
+
+		//searching for patient appointments
+		//we need to get the appointment list index that stores the patient ID and then compare, if true print the
+		//array of that appointment
+
+
+		for(int i = 0; i < appointmentsList.size(); i++) {
+			String[] appointmentDetails = appointmentsList.get(i);
+			String appointmentPatientID =  appointmentDetails[appointmentIDIndex];
+			if (patientID.equals(appointmentPatientID))
+				System.out.println(Arrays.toString(appointmentDetails));
 		}
-		int records = scanner.nextInt();
-		createFakeDataFiles( records );
 	}
-
-
-	private static void getPatientHistory()
+	private static void handleGetPatientHistory()
 	{
-		// Your logic for getting patient history
+		showNameIDSelectionMenu("Get History", "of Patient");
+		int option = scanner.nextInt();
+		scanner.nextLine();
+		switch (option){
+			case 0:
+				return;
+			case 1:
+				int index = getEntityIndexByNameInput( "Patient", patientsList );
+				if (index != -1)
+					getPatientHistory(index);
+
+				break;
+			case 2:
+				int index2 = getEntityIndexByIDInput( "Patient", patientsList );
+				if (index2 != -1)
+					getPatientHistory(index2);
+				break;
+
+		}
 	}
+
+//	private static void getPatientHistoryByName(){
+//		int index = getEntityIndexByNameInput( "Patient", patientsList );
+//		if (index != -1)
+//			getPatientHistory(index);
+//
+//	}
+//	private static void getPatientHistoryByID(){
+//		int index = getEntityByIDInput( "Patient", patientsList );
+//		if (index != -1)
+//			getPatientHistory(index);
+//	}
 
 	private static void addDiagnosis()
 	{
@@ -949,7 +1010,13 @@ public class Main
 		System.out.println( "New patient added successfully." );
 	}
 
-	private static void getPatientDetails()
+	private static void getPatientDetails(int index)
+	{
+		String[] patientDetails = patientsList.get( index );
+		System.out.println( "Details of Patient '" + patientDetails[1] + "': " + Arrays.toString(patientDetails) );
+	}
+
+	private static void displayAllPatientDetails()
 	{
 		System.out.println( "\nList of Patients:" );
 		System.out.printf( "%-15s %-20s %-10s %-5s %-15s\n", "Patient ID", "Patient Name", "Gender", "Age", "Contact" );
@@ -996,7 +1063,7 @@ public class Main
 
 	public static void editPatientByID()
 	{
-		int index = getEntityByIDInput( "Patient", patientsList );
+		int index = getEntityIndexByIDInput( "Patient", patientsList );
 		if (index != -1)
 			editPatient( index );
 	}
@@ -1056,7 +1123,6 @@ public class Main
 		System.out.println( "Details of Patient '" + patientDetails[0] + "' after edit: " + Arrays.toString( patientDetails ) );
 	}
 
-
 	private static void submitPatientToWard()
 	{    // Your logic for submitting a patient to a ward
 	}
@@ -1089,8 +1155,8 @@ public class Main
 		}
 	}
 
-	//--------------------------------------------------------//
-	///Helper Fucntions for the the main tasks
+//----------------------------------------------------------------------------------------------------------------//
+	///Helper Functions for the main tasks
 
 	public static boolean isTimeInRange(String time, String startTime, String endTime) {
 		LocalTime timeToCheck = LocalTime.parse(time);
@@ -1141,7 +1207,7 @@ public class Main
 		);
 	}
 
-	public static int getEntityByIDInput(String entityName, ArrayList<String[]> list)
+	public static int getEntityIndexByIDInput(String entityName, ArrayList<String[]> list)
 	{
 		System.out.print( "Enter the ID: " );
 		String idToView = scanner.nextLine();
@@ -1162,8 +1228,7 @@ public class Main
 		return -1;
 	}
 
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+//--------------------------------------------------------------------------------------------------------------------//
 
 	public static boolean checkLoginDetailsForAdmin(String username, String password)
 	{
@@ -1289,7 +1354,7 @@ public class Main
 	}
 
 
-	//////////////////////////////////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------------------------------------------------------//
 
 	public static boolean userExist(String username, int role)
 	{
@@ -1382,7 +1447,8 @@ public class Main
 		return -1;
 	}
 /*
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------------------------------------------------------//
+
 How is the handling of global variables like number of entites and admin password and username is handled>?
 	 we have created an array numberOfEntitiesArray of int type
 	 this array stores only the number of entites which are registered so far into the system
@@ -1410,7 +1476,7 @@ How is the handling of global variables like number of entites and admin passwor
 				return getEntityID( "Ward", numberOfEntitiesArray[2] );
 			case "Patient":
 				numberOfEntitiesArray[3] += 1;
-				return getEntityID( "Ward", numberOfEntitiesArray[3] );
+				return getEntityID( "Patient", numberOfEntitiesArray[3] );
 			case "Diagnosis":
 				numberOfEntitiesArray[4] += 1;
 				return getEntityID( "Diagnosis", numberOfEntitiesArray[4] );
@@ -1423,7 +1489,7 @@ How is the handling of global variables like number of entites and admin passwor
 	}
 
 
-	//runs are the start of prograame to automatically read the file and set global variables
+	//runs are the start of program to automatically read the file and set global variables
 	public static void loadSystemVariablesFileIntoMemory()
 	{
 		try
@@ -1580,7 +1646,8 @@ How is the handling of global variables like number of entites and admin passwor
 		}
 	}
 
-	////////////////////////////////////////////////////////////////////////////////////////////////////
+//--------------------------------------------------------------------------------------------------------------------//
+
 	public static void addDummyDoctor()
 	{
 		String doctorID = generateID( "Doctor" );
@@ -1664,7 +1731,23 @@ How is the handling of global variables like number of entites and admin passwor
 		updateDatabaseFile( "VariablesArray" );
 	}
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	private static void optionCreateFakeFiles()
+	{
+		System.out.print( "How many records to make? :" );
+		while (!scanner.hasNextInt())
+		{
+			System.out.println( "Invalid Input, Please Enter only numbers " );
+			System.out.print( "How many records to make? :" );
+		}
+		int records = scanner.nextInt();
+		createFakeDataFiles( records );
+	}
+
+//--------------------------------------------------------------------------------------------------------------------//
+/*
+* Main functions to run the programs
+*
+*/
 
 	public static void InitializeProgramme()
 	{
@@ -1728,6 +1811,5 @@ How is the handling of global variables like number of entites and admin passwor
 		// In this example, the option to go to the main menu is shown only for Submenu 1
 		navigateMenu( mainMenuOptions );
 	}
-
 
 }
