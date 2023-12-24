@@ -1144,6 +1144,7 @@ public class Main
 		return selection;
 	}
 
+	//if  multiple entites have found , it will return -2, if non is found , it will return -1. else it will retrn the index of entity.
 	public static int getEntityIndexByNameInput(String entityName, ArrayList<String[]> list)
 	{
 		System.out.print( "Enter the Name: " );
