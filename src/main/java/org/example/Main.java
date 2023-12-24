@@ -93,7 +93,7 @@ public class Main
 			// Display the rest of the menu options
 			for (int i = 1; i < menu.size(); i++)
 			{
-				System.out.printf( "%s %-" + (lineWidth - 2) + "s\n", "*".repeat( lineWidth / 4 ), (i) + ". " + menu.get( i ) );
+				System.out.printf( "| %s %-" + (lineWidth - 2) + "s\n", "*".repeat( lineWidth / 4 ), (i) + ". " + menu.get( i ) );
 			}
 
 			displayCenterAlignedText( "0. Go back", lineWidth );
@@ -182,7 +182,7 @@ public class Main
 				subMenu.add( "Add Patient" );
 				subMenu.add( "Get Patient Details" );
 				subMenu.add( "Edit Patient Details" );
-				subMenu.add( "Submit Patient To Ward" );
+				subMenu.add( "Admit Patient To Ward" );
 				subMenu.add( "Create Appointment" );
 				subMenu.add( "Mark Appointnment As Done" );
 				subMenu.add( "Check Doctor's Availability" );
@@ -277,8 +277,8 @@ public class Main
 			case "Edit Patient Details":
 				handleEditPatientDetailsMenu();
 				break;
-			case "Submit Patient To Ward":
-				handleSubmitPatientToWard();
+			case "Admit Patient To Ward":
+				handleAdmitPatientToWard();
 				break;
 			case "Create Appointment":
 				handleCreateAppointment();
@@ -329,6 +329,14 @@ public class Main
 			System.out.println( "The date entered is in incoorect format ,It should be like 02/02/2024" );
 			return false;
 		}
+	}
+	public static boolean verifyGenderInput(String gender)
+	{
+		if(gender.toLowerCase().equals( "male" )||gender.toLowerCase().equals( "female" ) || gender.toLowerCase().equals( "other" ) ){
+			return  true;
+		}
+		System.out.println("Invalid entry, male/female/other are allowed");
+		return false;
 	}
 
 	private static void registerNewDoctor()
@@ -940,9 +948,13 @@ public class Main
 		String name = scanner.nextLine();
 		if (name.trim().equals( "-1" )) return;
 
-		System.out.print( "Enter patient gender: " );
-		String gender = scanner.nextLine();
-		if (gender.trim().equals( "-1" )) return;
+		String gender;
+		do{
+			System.out.print( "Enter patient gender: " );
+			gender = scanner.nextLine();
+			if (gender.trim().equals( "-1" )) return;
+		}while(verifyGenderInput(gender));
+
 
 		System.out.print( "Enter patient age: " );
 		String age = scanner.nextLine();
@@ -1044,7 +1056,7 @@ public class Main
 		System.out.println( "Details of Patient '" + patientDetails[0] + "' after edit: " + Arrays.toString( patientDetails ) );
 	}
 
-	private static void handleSubmitPatientToWard()
+	private static void handleAdmitPatientToWard()
 	{
 		int patientIndex = getEntityIndexByIDNameSelection( "Submit", "Patient", patientsList );
 		int wardIndex = getEntityIndexByIDNameSelection( "Submit", "Ward", wardsList );
