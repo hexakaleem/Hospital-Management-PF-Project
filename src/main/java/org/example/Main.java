@@ -1,10 +1,9 @@
 package org.example;
 
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.RandomUtils;
-
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -19,7 +18,14 @@ public class Main
 	static final String PATIENTS_FILE_NAME = "data/Patients.txt";
 	static final String DIAGNOSIS_FILE_NAME = "data/Diagnosis.txt";
 	static final String APPOINTMENTS_FILE_NAME = "data/Appointments.txt";
+	static final String WARDS_SUBMISSION_FILE_NAME = "data/Submissions.txt";
 	static final String SYSTEM_VARIABLES_FILE_NAME = "data/SystemVariables.txt";
+	static final int docUsernameIndex = 6;
+	static final int docPasswordIndex = 7;
+	static final int receptionistUsernameIndex = 2;
+	static final int receptionistPasswordIndex = 3;
+	static int selectedPatientIndex = -1;
+	static int loggedInDoctorIndex = -1;
 	// ['Doc ID', 'Doc Name' , 'Time Start', 'Time End', 'Ward Name', 'Specialized
 	// In', 'username' , 'password']
 	static ArrayList<String[]> doctorsList = new ArrayList<>();
@@ -34,12 +40,15 @@ public class Main
 	static ArrayList<String[]> diagnosisList = new ArrayList<>();
 	// ['Appointment ID', 'Patient ID' , 'Doctor ID','Time Start','Time End']
 	static ArrayList<String[]> appointmentsList = new ArrayList<>();
+	// ['Submission ID', 'Patient ID' , 'Ward ID','Time Start','Time End']
+	static ArrayList<String[]> wardPatientSubmissionList = new ArrayList<>();
 	static File doctorDataFilePath = new File( DOCTORS_FILE_NAME );
 	static File receptionistDataFilePath = new File( RECEPTIONISTS_FILE_NAME );
 	static File wardDataFilePath = new File( WARDS_FILE_NAME );
 	static File patientDataFilePath = new File( PATIENTS_FILE_NAME );
 	static File diagnosisDataFilePath = new File( DIAGNOSIS_FILE_NAME );
 	static File appointmentsDataFilePath = new File( APPOINTMENTS_FILE_NAME );
+	static File wardSubmissionsDataFilePath = new File( WARDS_SUBMISSION_FILE_NAME );
 	static File systemVariablesFilePath = new File( SYSTEM_VARIABLES_FILE_NAME );
 	static ArrayList<String> mainMenuOptions = new ArrayList<String>()
 	{{
@@ -48,24 +57,16 @@ public class Main
 		add( "Doctor's Section" );
 		add( "Receptionist's Section" );
 	}};
-
 	// { adminUserName, adminPassword, numberOfDoctors, numberOfReceptionists, numberOfWards, numberOfPatients,
 	// numberOfDiagnosis, numberOfAppointments }
 	//For taking into account how many entities have got registered so far, so whenever new entity gets registered,
 	//its id will be generated uniquely by incrementing old number
-	static int[] numberOfEntitiesArray = new int[6];
-
+	static int[] numberOfEntitiesArray = new int[7];
 	//[adminUsername, adminPassword, numberOfEntitiesArray]
 	static String[] globalVariablesArray = new String[8];
-
 	static Scanner scanner = new Scanner( System.in );
 	static String adminPassword = "kaleem";
 	static String adminUsername = "kaleem";
-	static int docUsernameIndex = 6;
-	static int docPasswordIndex = 7;
-	static int receptionistUsernameIndex = 2;
-	static int receptionistPasswordIndex = 3;
-
 
 	// Method to display center-aligned text
 	private static void displayCenterAlignedText(String text, int lineWidth)
@@ -79,7 +80,7 @@ public class Main
 
 	public static void navigateMenu(List<String> menu)
 	{
-		int choice = -1;
+		int choice;
 
 		while (!menu.isEmpty())
 		{
@@ -171,8 +172,7 @@ public class Main
 			//For Doctors Screen
 			case "Doctor's Section":
 				subMenu.add( "Doctor's Section" );
-				subMenu.add( "Get Patient History" );
-				subMenu.add( "Add Diagnosis" );
+				subMenu.add( "Handle Patient" );
 				subMenu.add( "Check Upcoming Appointments" );
 				break;
 			//For Receptionists Section
@@ -182,8 +182,15 @@ public class Main
 				subMenu.add( "Get Patient Details" );
 				subMenu.add( "Edit Patient Details" );
 				subMenu.add( "Submit Patient To Ward" );
+				subMenu.add( "Create Appointment" );
+				subMenu.add( "Mark Appointnment As Done" );
 				subMenu.add( "Check Doctor's Availability" );
 				subMenu.add( "Get All Doctors" );
+				break;
+			case "Handle Patient":
+				subMenu.add( "Handle Patient" );
+				subMenu.add( "Get Patient History" );
+				subMenu.add( "Add Diagnosis" );
 				break;
 			case "Display All Wards":
 				subMenu.add( "Display All Wards" );
@@ -248,8 +255,10 @@ public class Main
 				displayAllWards();
 				break;
 			/// Doctor
+			case "Handle Patient":
+				return handlePatient();
 			case "Get Patient History":
-				handleGetPatientHistory();
+				getPatientHistory();
 				break;
 			case "Add Diagnosis":
 				addDiagnosis();
@@ -257,6 +266,7 @@ public class Main
 			case "Check Upcoming Appointments":
 				checkUpcomingAppointments();
 				break;
+			//Receptionist
 			case "Add Patient":
 				addPatient();
 				break;
@@ -269,15 +279,19 @@ public class Main
 			case "Submit Patient To Ward":
 				handleSubmitPatientToWard();
 				break;
+			case "Create Appointment":
+				handleCreateAppointment();
+				break;
+			case "Mark Appointnment As Done":
+				handleAppointmentStatus();
+				break;
 			case "Check Doctor's Availability":
 				handlecheckDoctorsAvailability();
 				break;
 			case "Get All Doctors":
 				getAllDoctors();
 				break;
-			case "Fill Database With Fake Data":
-				optionCreateFakeFiles();
-				break;
+
 
 			default:
 				return false;
@@ -286,37 +300,61 @@ public class Main
 	}
 
 	//This function will check if the date entered is in the form our system can process.
-	public static boolean verifyTimeInput(String time){
-		try{
-			LocalTime.parse( time, DateTimeFormatter.ofPattern("hh:mm a", Locale.US) );
+	public static boolean verifyTimeInput(String time)
+	{
+		try
+		{
+			LocalTime.parse( time, DateTimeFormatter.ofPattern( "hh:mm a", Locale.US ) );
 			return true;
-		}catch(DateTimeParseException e){
-			System.out.println("The date entered is in incoorect format ,It should be like 06:00 PM" );
+		}
+		catch (DateTimeParseException e)
+		{
+			System.out.println( "The date entered is in incoorect format ,It should be like 06:00 PM" );
 			return false;
 		}
 	}
+
+	public static boolean verifyDateInput(String date)
+	{
+		try
+		{
+			LocalTime.parse( date, DateTimeFormatter.ofPattern( "dd-MM-yyyy") );
+			return true;
+		}
+		catch (DateTimeParseException e)
+		{
+			System.out.println( "The date entered is in incoorect format ,It should be like 02-02-2024" );
+			return false;
+		}
+	}
+
 	private static void registerNewDoctor()
 	{
 
 		System.out.print( " You are Registering a new Doctor, Enter -1 anytime to discard the process \n" );
 		System.out.print( "Enter doctor name: " );
 		String name = scanner.nextLine();
+
 		String timingStart;
-		if (name.trim().equals( "-1" )) return;
-		do{
+		do
+		{
 			System.out.print( "Enter doctor`s shift start time (e.g 10:00 AM): " );
 			timingStart = scanner.nextLine();
 			if (timingStart.trim().equals( "-1" )) return;
-		}while(!verifyTimeInput(  timingStart));
-		timingStart= LocalTime.parse( timingStart, DateTimeFormatter.ofPattern("hh:mm a", Locale.US) ).toString();
+		}
+		while (!verifyTimeInput( timingStart ));
+
+		timingStart = LocalTime.parse( timingStart, DateTimeFormatter.ofPattern( "hh:mm a", Locale.US ) ).toString();
 
 		String timingEnd;
-		do{
+		do
+		{
 			System.out.print( "Enter doctor`s shift end time(e.g 03:00 PM): " );
-			timingEnd= scanner.nextLine();
+			timingEnd = scanner.nextLine();
 			if (timingEnd.trim().equals( "-1" )) return;
-		}while(!verifyTimeInput(  timingEnd));
-		timingEnd= LocalTime.parse( timingEnd, DateTimeFormatter.ofPattern("hh:mm a", Locale.US) ).toString();
+		}
+		while (!verifyTimeInput( timingEnd ));
+		timingEnd = LocalTime.parse( timingEnd, DateTimeFormatter.ofPattern( "hh:mm a", Locale.US ) ).toString();
 
 		System.out.print( "Enter doctor ward(e.g Cardiology): " );
 		String ward = scanner.nextLine();
@@ -331,7 +369,7 @@ public class Main
 			System.out.print( "Enter doctor username: " );
 			username = scanner.nextLine();
 			if (username.trim().equals( "-1" )) return;
-			if (userExist( username, 2 ))
+			if (entityExist( username, 2 ))
 				System.out.println( "The username" + username + " already exist. Enter another." );
 			else break;
 		}
@@ -365,14 +403,14 @@ public class Main
 	{
 		int option = getNameIDSelection( "Edit", "Doctor" );
 
-		int index=-1;
+		int index = -1;
 		switch (option)
 		{
 			case 0:
 				return;
 			case 1:
 				index = getEntityIndexByNameInput( "Doctor", doctorsList );
-				if(index!=-2)
+				if (index != -2)
 					break;
 			case 2:
 				index = getEntityIndexByIDInput( "Doctor", doctorsList );
@@ -440,28 +478,35 @@ public class Main
 		System.out.println( "Details of Doctor '" + doctorDetails[0] + "' after edit: " + Arrays.toString( doctorDetails ) );
 	}
 
-	private static void handleGetDoctorDetails()
+	public static int getEntityIndexByIDNameSelection(String operationToPerform, String entity, ArrayList<String[]> list)
 	{
-		int option = getNameIDSelection( "Show", "Doctor" );
+		int option = getNameIDSelection( operationToPerform, entity );
 
-		int index=-1;
+		int index = -1;
 		switch (option)
 		{
 			case 0:
-				return;
+				return -1;
 			case 1:
-				index = getEntityIndexByNameInput( "Doctor", doctorsList );
-				if(index!=-2)
+				index = getEntityIndexByNameInput( entity, list );
+				if (index != -2)
 					break;
 			case 2:
-				index = getEntityIndexByIDInput( "Doctor", doctorsList );
+				index = getEntityIndexByIDInput( entity, list );
 				break;
 			default:
 				System.out.println( "Invalid edit option." );
 		}
+		return index;
+	}
+
+	private static void handleGetDoctorDetails()
+	{
+		int index = getEntityIndexByIDNameSelection( "Show", "Doctor", doctorsList );
 		if (index != -1)
 			showDoctorDetails( index );
 	}
+
 	private static void showDoctorDetails(int index)
 	{
 		String[] doctorDetails = doctorsList.get( index );
@@ -470,26 +515,12 @@ public class Main
 
 	private static void handleRemoveDoctor()
 	{
-		int option = getNameIDSelection( "Remove", "Doctor" );
 
-		int index=-1;
-		switch (option)
-		{
-			case 0:
-				return;
-			case 1:
-				index = getEntityIndexByNameInput( "Doctor", doctorsList );
-				if(index!=-2)
-					break;
-			case 2:
-				index = getEntityIndexByIDInput( "Doctor", doctorsList );
-				break;
-			default:
-				System.out.println( "Invalid edit option. No changes made." );
-		}
+		int index = getEntityIndexByIDNameSelection( "Remove", "Doctor", doctorsList );
 		if (index != -1)
 			removeDoctor( index );
 	}
+
 	private static void removeDoctor(int index)
 	{
 		doctorsList.remove( index );
@@ -572,22 +603,7 @@ public class Main
 
 	private static void handleRemoveReceptionist()
 	{
-		int option = getNameIDSelection( "Remove", "Receptionist" );
-
-		int index =-1;
-				switch (option)
-		{
-			case 0:
-				return;
-			case 1:
-				index = getEntityIndexByNameInput( "Receptionist", receptionistsList );
-				if (index != -2) break;
-			case 2:
-				index = getEntityIndexByIDInput( "Receptionist", receptionistsList );
-				break;
-			default:
-				System.out.println( "Invalid edit option. No changes made." );
-		}
+		int index = getEntityIndexByIDNameSelection( "Remove", "Receptionist", receptionistsList );
 		if (index != -1)
 			removeReceptionist( index );
 	}
@@ -601,23 +617,7 @@ public class Main
 
 	private static void handleEditReceptionistDetailsMenu()
 	{
-		int option = getNameIDSelection( "Edit", "Receptionist" );
-
-		int index =-1;
-		switch (option)
-		{
-			case 0:
-				return;
-			case 1:
-				index = getEntityIndexByNameInput( "Receptionist", receptionistsList );
-				if (index != -2) break;
-				break;
-			case 2:
-				index = getEntityIndexByIDInput( "Receptionist", receptionistsList );
-				break;
-			default:
-				System.out.println( "Invalid edit option. No changes made." );
-		}
+		int index = getEntityIndexByIDNameSelection( "Edit", "Receptionist", receptionistsList );
 		if (index != -1)
 			editReceptionist( index );
 	}
@@ -732,28 +732,56 @@ public class Main
 
 	private static void handleEditWardDetails()
 	{
-		int option =  getNameIDSelection( "Edit", "Ward" );
-
-		int index =-1;
-		switch (option)
-		{
-			case 0:
-				return;
-			case 1:
-				index = getEntityIndexByNameInput( "Ward", wardsList );
-				if (index != -2) break;
-			case 2:
-				index = getEntityIndexByIDInput( "Ward", wardsList );
-				break;
-			default:
-				System.out.println( "Invalid edit option. No changes made." );
-		}
+		int index = getEntityIndexByIDNameSelection( "Edit", "Ward", wardsList );
 		if (index != -1)
 			editWard( index );
 	}
 	private static void editWard( int index)
 	{
+		String[] wardDetails = wardsList.get(index);
+		System.out.println( "Current Details of Ward '" + wardDetails[0] + "': " + Arrays.toString(wardDetails) );
 
+		System.out.println( "\nSelect the option to edit:" );
+		System.out.println( "1. Edit Ward Name" );
+		System.out.println( "2. Edit Ward Type" );
+		System.out.println( "3. Edit Total Ward Beds" );
+		System.out.println( "0. Return: " );
+		int editChoice = scanner.nextInt();
+		scanner.nextLine();
+
+		switch (editChoice)
+		{
+			case 1:
+				System.out.print( "Enter New Ward name: " );
+				String newName = scanner.nextLine();
+				wardDetails[1] = newName;
+				break;
+			case 2:
+				System.out.print( "Enter New Ward Type: " );
+				String newWardType = scanner.nextLine();
+				wardDetails[4] = newWardType;
+				break;
+			case 3:
+				System.out.print( "Enter New Total Number of Beds: " );
+				int intNumberOfBedsOccupied = Integer.parseInt(wardDetails[3]);
+				String newTotalNumberOfBeds = scanner.nextLine();
+				int intNewTotalNumberOfBeds = Integer.parseInt(newTotalNumberOfBeds);
+				if (intNewTotalNumberOfBeds > intNumberOfBedsOccupied)
+					wardDetails[2] = newTotalNumberOfBeds;
+				else
+				{
+					System.out.println("Cannot Reduce Beds as there are Patients admitted in the Ward");
+					return;
+				}
+				break;
+			case 0:
+				System.out.println( "No changes made." );
+				return;
+			default:
+				System.out.println( "Invalid edit choice. No changes made." );
+		}
+		updateDatabaseFileThread(wardDataFilePath, wardsList);
+		System.out.println( "Details of Ward '" + wardDetails[0] + "' after edit: " + Arrays.toString( wardDetails ) );
 
 	}
 
@@ -781,22 +809,7 @@ public class Main
 
 	private static void handleRemoveWard()
 	{
-		int option =  getNameIDSelection( "Remove", "Ward" );
-
-		int index=-1;
-		switch (option)
-		{
-			case 0:
-				return;
-			case 1:
-				index = getEntityIndexByNameInput( "Ward", wardsList );
-				if (index != -2) break;
-			case 2:
-				index = getEntityIndexByIDInput( "Ward", wardsList );
-				break;
-			default:
-				System.out.println( "Invalid edit option. No changes made." );
-		}
+		int index = getEntityIndexByIDNameSelection( "Remove", "Ward", wardsList );
 		if (index != -1)
 			removeWard( index );
 	}
@@ -811,24 +824,7 @@ public class Main
 
 	private static void handleGetWardDetails()
 	{
-
-		int option =   getNameIDSelection( "Show", "Ward" );
-
-		int index=-1;
-		switch (option)
-		{
-			case 0:
-				return;
-			case 1:
-				index = getEntityIndexByNameInput( "Ward", wardsList );
-				if (index != -2) break;
-				break;
-			case 2:
-				index = getEntityIndexByIDInput( "Ward", wardsList );
-				break;
-			default:
-				System.out.println( "Invalid edit option." );
-		}
+		int index = getEntityIndexByIDNameSelection( "Show", "Ward", wardsList );
 		if (index != -1)
 			showWardDetails( index );
 	}
@@ -842,78 +838,95 @@ public class Main
 
 //----------------------------------------------------------------------------------------------------------------//
 
-
-
-
-/*	function to display patient history by taking the ID and search for appointments and diagnosis of patients and
-	displaying them
-
-	patientsList:
-	['Patient ID', 'Patient Name' , 'Gender','Age','Contact']
-
-	appointmentsList:
-	['Appointment ID', 'Patient ID' , 'Doctor ID','Time Start','Time End']
-
-	diagnosisList:
-	['Diagnosis ID','Patient ID','DoctorID','Prescriptions','Diagnosis','Appointment ID']
-*/
-
-	//Handle to display options to for
-
-
-	private static void handleGetPatientHistory()
+	private static boolean handlePatient()
 	{
-		int option =   getNameIDSelection("Get History", "of Patient");
-
-		int index=-1;
-		switch (option){
-			case 0:
-				return;
-			case 1:
-				index = getEntityIndexByNameInput( "Patient", patientsList );
-				if (index != -2) break;
-			case 2:
-				index = getEntityIndexByIDInput( "Patient", patientsList );
-				break;
-
+		int index = getEntityIndexByIDNameSelection( "Select", "Patient", patientsList );
+		if (index == -1)
+		{
+			return false;
 		}
-		if (index != -1)
-			getPatientHistory(index);
+		selectedPatientIndex = index;
+		return  true;
 	}
-	private static void getPatientHistory(int index){
+
+
+	//Code for processing patient history
+	private static void getPatientHistory()
+	{
 		//Index of IDs of the patients in the different Lists:
 		final int patientIDIndex = 0;
 		final int appointmentIDIndex = 1;
-		final int diagnosisArrayIDIndex = 1;
-
+		final int diagnosisIDIndex = 1;
 
 		//Taking patients ID by using index
 		//Displaying patient details using index
-		getPatientDetails(index);
+		getPatientDetails( selectedPatientIndex );
 
-		String[] patientDetails = patientsList.get(index);
-		String patientID =  patientDetails[patientIDIndex];
+		String[] patientDetails = patientsList.get( selectedPatientIndex );
+		String patientID = patientDetails[patientIDIndex];
+		String patientName = patientDetails[1];
 
 		//searching for patient appointments
 		//we need to get the appointment list index that stores the patient ID and then compare, if true print the
 		//array of that appointment
+		System.out.println( "All Appointments of Patient '" + patientName + "': " );
+		for (int i = 0; i < appointmentsList.size(); i++)
+		{
+			String[] appointmentDetails = appointmentsList.get( i );
+			String appointmentPatientID = appointmentDetails[appointmentIDIndex];
+			if (patientID.equals( appointmentPatientID ))
+				System.out.println( Arrays.toString( appointmentDetails ) );
+		}
 
-
-		for(int i = 0; i < appointmentsList.size(); i++) {
-			String[] appointmentDetails = appointmentsList.get(i);
-			String appointmentPatientID =  appointmentDetails[appointmentIDIndex];
-			if (patientID.equals(appointmentPatientID))
-				System.out.println(Arrays.toString(appointmentDetails));
+		//Now searching for matching diagnosis for the patient by using ID
+		System.out.println( "All Diagnosis of Patient '" + patientName + "': " );
+		for (int i = 0; i < diagnosisList.size(); i++)
+		{
+			String[] diagnosisDetails = diagnosisList.get( i );
+			String diagnosisPatientID = diagnosisDetails[diagnosisIDIndex];
+			if (patientID.equals( diagnosisPatientID ))
+				System.out.println( Arrays.toString( diagnosisDetails ) );
 		}
 	}
+
 	private static void addDiagnosis()
 	{
-		// Your logic for adding a diagnosis
+		//Taking Patient ID from the patient array
+		String[] patientDetailsArray = patientsList.get( selectedPatientIndex );
+
+		String patientID = patientDetailsArray[0];
+		String doctorID = doctorsList.get( loggedInDoctorIndex )[0];
+
+
+		// IDs exist, proceed to gather other diagnosis information
+		String diagnosisID = generateID( "Diagnosis" );
+		System.out.print( "Enter Prescriptions: " );
+		String prescriptions = scanner.nextLine();
+		System.out.print( "Enter Diagnosis: " );
+		String diagnosis = scanner.nextLine();
+
+		// Creating a new array to store diagnosis information
+		String[] newDiagnosis = {diagnosisID, patientID, doctorID, prescriptions, diagnosis};
+
+		// Adding the new diagnosis to the ArrayList
+		diagnosisList.add( newDiagnosis );
+		updateDatabaseFileThread( diagnosisDataFilePath, diagnosisList );
+
+		System.out.println( "Diagnosis information added successfully." );
+
 	}
 
-	private static void checkUpcomingAppointments()
-	{
-		// Your logic for checking upcoming appointments
+	private static void checkUpcomingAppointments() {
+		// ['Appointment ID', 'Patient ID' , 'Doctor ID','appointment time' , 'appointment date' ,Appointment status]
+		for (String[] appointmentListDetail : appointmentsList) {
+			String appointmentListDoctorID = appointmentListDetail[2];
+			String appointmentStatus = appointmentListDetail[5];
+			String docID= doctorsList.get( loggedInDoctorIndex )[0];
+			if (docID.equals(appointmentListDoctorID) && appointmentStatus.equals("Pending"))
+			{
+				System.out.println(Arrays.toString(appointmentListDetail));
+			}
+		}
 	}
 
 	private static void addPatient()
@@ -955,48 +968,20 @@ public class Main
 
 	private static void handleGetPatientDetails()
 	{
-		int option =   getNameIDSelection("Get Details", "of Patient");
-
-		int index=-1;
-		switch (option){
-			case 0:
-				return;
-			case 1:
-				index = getEntityIndexByNameInput( "Patient", patientsList );
-				if (index != -2) break;
-			case 2:
-				index = getEntityIndexByIDInput( "Patient", patientsList );
-				break;
-
-		}
+		int index = getEntityIndexByIDNameSelection( "Get Details", "Patient", patientsList );
 		if (index != -1)
-			getPatientDetails(index);
+			getPatientDetails( index );
 	}
+
 	private static void getPatientDetails(int index)
 	{
 		String[] patientDetails = patientsList.get( index );
-		System.out.println( "Details of Patient '" + patientDetails[1] + "': " + Arrays.toString(patientDetails) );
+		System.out.println( "Details of Patient '" + patientDetails[1] + "': " + Arrays.toString( patientDetails ) );
 	}
 
 	private static void handleEditPatientDetailsMenu()
 	{
-		int option =   getNameIDSelection( "Edit", "Patient" );
-
-		int index=-1;
-		switch (option)
-		{
-			case 0:
-				return;
-			case 1:
-				index = getEntityIndexByNameInput( "Patient", patientsList );
-				if (index != -2) break;
-				break;
-			case 2:
-				index = getEntityIndexByIDInput( "Patient", patientsList );
-				break;
-			default:
-				System.out.println( "Invalid edit option. No changes made." );
-		}
+		int index = getEntityIndexByIDNameSelection( "Edit", "Patient", patientsList );
 		if (index != -1)
 			editPatient( index );
 	}
@@ -1058,84 +1043,109 @@ public class Main
 
 	private static void handleSubmitPatientToWard()
 	{
-		int option =    getNameIDSelection( "Submit", "Patient" );
-
-		int patientIndex=-1;
-		switch (option)
-		{
-			case 0:
-				return;
-			case 1:
-				patientIndex = getEntityIndexByNameInput( "Patient", patientsList );
-				if (patientIndex != -2) break;
-				break;
-			case 2:
-				patientIndex = getEntityIndexByIDInput( "Patient", patientsList );
-				break;
-			default:
-				System.out.println( "Invalid edit option. No changes made." );
-				return;
-		}
-		option =   getNameIDSelection( "Submit", "To Ward" );
-
-		int wardIndex=-1;
-		switch (option)
-		{
-			case 0:
-				return;
-			case 1:
-				wardIndex = getEntityIndexByNameInput( "Ward", wardsList );
-				if (wardIndex != -2) break;
-				break;
-			case 2:
-				wardIndex = getEntityIndexByIDInput( "Ward", wardsList );
-				break;
-			default:
-				System.out.println( "Invalid edit option. No changes made." );
-				return;
-		}
-		if (patientIndex != -1 && wardIndex!=-1 )
-			submitPatientToWard( patientIndex,wardIndex );
+		int patientIndex = getEntityIndexByIDNameSelection( "Submit", "Patient", patientsList );
+		int wardIndex = getEntityIndexByIDNameSelection( "Submit", "Ward", wardsList );
+		if (patientIndex != -1 && wardIndex != -1)
+			submitPatientToWard( patientIndex, wardIndex );
 	}
-	private static void submitPatientToWard(int patientIndex, int wardIndex )
+
+	private static void submitPatientToWard(int patientIndex, int wardIndex)
 	{
-		String[] ward= wardsList.get( wardIndex );
+		String[] ward = wardsList.get( wardIndex );
 		String[] patient = patientsList.get( patientIndex );
+		String wardID= ward[0];
+		String patientID= patient[0];
 
+		// ['Ward ID', 'Ward Name' , 'Total Beds','Occupied Beds','Type']
+		// ['Submission ID', 'Patient ID' , 'Ward ID','Time Start','Time End']
+		int occupiedBeds= Integer.parseInt( ward[3] );
+		int totalBeds= Integer.parseInt( ward[2] );
+		LocalTime timeNow= LocalTime.now( ZoneId.of( "Asia/Karachi" ));
 
+		if(occupiedBeds+1 > totalBeds){
+			System.out.printf("The ward %s is out of beds , cannot add more patients in it....\n", ward[0]);
+		}else{
+			String[] newSubmission = {
+					generateID( "Submission" ),
+					patientID,
+					wardID,
+					timeNow.toString(),
+			};
+			wardPatientSubmissionList.add( newSubmission );
+
+			updateDatabaseFileThread( wardSubmissionsDataFilePath, wardPatientSubmissionList );
+		}
+	}
+	private static void handleCreateAppointment()
+	{
+		int doctorIndex = getEntityIndexByIDNameSelection( "Select", "Doctor", doctorsList );
+		int patientIndex = getEntityIndexByIDNameSelection( "Select", "Patient", patientsList );
+		String[] doctor = doctorsList.get(doctorIndex);
+		String[] patient = doctorsList.get(patientIndex);
+		String docID= doctor[0];
+		String patientID= patient[0];
+
+		String appointmentTime;
+		do
+		{
+			System.out.print( "Enter appointment time (e.g 10:00 AM): " );
+			appointmentTime = scanner.nextLine();
+		}
+		while (!verifyTimeInput( appointmentTime ));
+		appointmentTime = LocalTime.parse( appointmentTime, DateTimeFormatter.ofPattern( "hh:mm a", Locale.US ) ).toString();
+
+		String appointmentDate;
+		do
+		{
+			System.out.print( "Enter appointment time (e.g 10:00 AM): " );
+			appointmentDate = scanner.nextLine();
+		}
+		while (!verifyDateInput( appointmentDate ));
+		appointmentDate = LocalTime.parse( appointmentDate, DateTimeFormatter.ofPattern( "dd-MM-yyyy") ).toString();
+
+		// Creating a new array to store patient details
+		String[] newAppointment = {
+				generateID( "Appointment" ),
+				patientID,
+				docID,
+				appointmentTime,
+				appointmentDate,
+				"Pending"
+		};
+		appointmentsList.add( newAppointment );
+
+		updateDatabaseFileThread( appointmentsDataFilePath, appointmentsList );
+		System.out.println("The Appointment "+ newAppointment[0] + " is registered with " +doctor[1] + "at "+ appointmentTime + " " +appointmentDate);
+
+	}
+
+	private static void handleAppointmentStatus(){
+
+		int index = getEntityIndexByIDInput("Appointment", appointmentsList);
+		if(index != -1){
+			String[] appointment= appointmentsList.get( index );
+			appointment[5]= "Completed";
+		}
+		updateDatabaseFileThread( appointmentsDataFilePath, appointmentsList );
 	}
 
 	private static void handlecheckDoctorsAvailability()
 	{
-		int option = getNameIDSelection( "Check Availability", "Doctor" );
-
-		int index=-1;
-		switch (option)
-		{
-			case 0:
-				return;
-			case 1:
-				index = getEntityIndexByNameInput( "Doctor", doctorsList );
-				if(index!=-2)
-					break;
-			case 2:
-				index = getEntityIndexByIDInput( "Doctor", doctorsList );
-				break;
-			default:
-				System.out.println( "Invalid edit option. No changes made." );
-		}
+		int index = getEntityIndexByIDNameSelection( "Check Availability", "Doctor", doctorsList );
 		if (index != -1)
 			checkDoctorsAvailability( index );
 	}
-	private static void checkDoctorsAvailability( int index)
+
+	private static void checkDoctorsAvailability(int index)
 	{
-		String[] doctor= doctorsList.get( index );
+		String[] doctor = doctorsList.get( index );
 		//At index 2 start time is ther and at index 3 end time is there
-		String docName= doctor[1];
-		LocalTime now=  LocalTime.now();
-		boolean isAvailable= isTimeInRange( now.toString(), doctor[2], doctor[3] );
-		if (isAvailable) System.out.println("The Doctor is Available ");
-		else System.out.println("The docotor "+docName + " is not avaiable,Shift Times are "+ doctor[2] +"-"+doctor[3] );
+		String docName = doctor[1];
+		LocalTime now = LocalTime.now();
+		boolean isAvailable = isTimeInRange( now.toString(), doctor[2], doctor[3] );
+		if (isAvailable) System.out.println( "The Doctor is Available " );
+		else
+			System.out.println( "The docotor " + docName + " is not avaiable,Shift Times are " + doctor[2] + "-" + doctor[3] );
 	}
 
 	private static void getAllDoctors()
@@ -1163,19 +1173,26 @@ public class Main
 //----------------------------------------------------------------------------------------------------------------//
 	///Helper Functions for the main tasks
 
-	public static boolean isTimeInRange(String time, String startTime, String endTime) {
-		try{
-			LocalTime timeToCheck = LocalTime.parse(time);
-			LocalTime start = LocalTime.parse(startTime, DateTimeFormatter.ofPattern("hh:mm a", Locale.US) );
-			LocalTime end = LocalTime.parse(endTime, DateTimeFormatter.ofPattern("hh:mm a", Locale.US));
+	public static boolean isTimeInRange(String time, String startTime, String endTime)
+	{
+		try
+		{
+			LocalTime timeToCheck = LocalTime.parse( time );
+			LocalTime start = LocalTime.parse( startTime, DateTimeFormatter.ofPattern( "hh:mm a", Locale.US ) );
+			LocalTime end = LocalTime.parse( endTime, DateTimeFormatter.ofPattern( "hh:mm a", Locale.US ) );
 
-			if (start.isAfter(end)) {
-				return timeToCheck.isAfter(start) || timeToCheck.isBefore(end);
-			} else {
-				return timeToCheck.isAfter(start) && timeToCheck.isBefore(end);
+			if (start.isAfter( end ))
+			{
+				return timeToCheck.isAfter( start ) || timeToCheck.isBefore( end );
 			}
-		}catch (DateTimeParseException e){
-			System.out.println("Something went wrong!, Please make sure the files are not damaaged. Delete the gobalvariablesarray File if the error persists.");
+			else
+			{
+				return timeToCheck.isAfter( start ) && timeToCheck.isBefore( end );
+			}
+		}
+		catch (DateTimeParseException e)
+		{
+			System.out.println( "Something went wrong!, Please make sure the files are not damaaged. Delete the gobalvariablesarray File if the error persists." );
 			return false;
 		}
 
@@ -1186,7 +1203,7 @@ public class Main
 		System.out.printf( "\nSelect the option to %s %s: \n", operation, entity );
 		System.out.printf( "1. %s by Name\n", operation );
 		System.out.printf( "2. %s by ID\n", operation );
-		System.out.print( "0. Return back " );
+		System.out.print( "0. Return back \n" );
 		System.out.print( "Enter your choice: " );
 		while (!scanner.hasNextInt())
 		{
@@ -1204,21 +1221,47 @@ public class Main
 	{
 		System.out.print( "Enter the Name: " );
 		String nameToView = scanner.nextLine();
-		ArrayList<Integer> indices= getEntityIndex( nameToView, list );
-		if (indices.size() > 1 ){
-			System.out.println("Multiple "+ entityName + "s have found: ");
-			for(Integer index : indices){
-				System.out.println(Arrays.toString( list.get( index ) ));
+		ArrayList<Integer> indices = getEntitiesIndexes( nameToView, list );
+		if (indices.size() > 1)
+		{
+			System.out.println( "Multiple " + entityName + "s have found: " );
+			for (Integer index : indices)
+			{
+				System.out.println( Arrays.toString( list.get( index ) ) );
 			}
-			System.out.println("Enter the ID of the specified "+ entityName);
+			System.out.println( "Enter the ID of the specified " + entityName );
 			return -2;
 		}
-		else if(indices.size()==0 ) {
+		else if (indices.isEmpty())
+		{
 			System.out.println( entityName + "by the name " + nameToView + " not found." );
 		}
-		else {
-			return indices.get(0);
+		else
+		{
+			return indices.get( 0 );
 		}
+		return -1;
+	}
+
+	public static int getEntityIndexByIDInput(String entityName, ArrayList<String[]> list)
+	{
+		String entityID;
+		do
+		{
+			System.out.print( "Enter the ID: " );
+			entityID = scanner.nextLine();
+		}
+		while (!verifyIDFormat( entityID, entityName ));
+
+		if (entityID.split( "-" ).length > 1)
+		{
+			entityID = entityID.split( "-" )[1];
+		}
+		int idInteger = Integer.parseInt( entityID );
+		int index = getEntityIndex( entityName, idInteger, list );
+		if (index != -1)
+			return index;
+		else System.out.println( entityName + " by the ID " + entityID + " not found." );
 		return -1;
 	}
 
@@ -1227,62 +1270,55 @@ public class Main
 		if (enteredID.chars().allMatch( Character::isDigit )) return true;
 		String[] parts = enteredID.split( "-" );
 		if (parts.length > 2) return false;
-		return (
-				parts[0].toUpperCase().equals( getEntityIDPrefix( entityName ) ) &&
-						parts[1].chars().allMatch( Character::isDigit )
-		);
+		boolean isFormatted = parts[0].toUpperCase().equals( getEntityIDPrefix( entityName ) ) && parts[1].chars().allMatch( Character::isDigit );
+		if (!isFormatted)
+			System.out.println( "The ID formate is invalid, It should be a number or should have " + getEntityIDPrefix( entityName ) + "097 formate" );
+		return isFormatted;
 	}
 
-	public static int getEntityIndexByIDInput(String entityName, ArrayList<String[]> list)
+	//This function requires the entiyID as whole ID inlcuding the prefix and integer part
+	private static int getEntityIndexByID(String entityID, ArrayList<String[]> list)
 	{
-		System.out.print( "Enter the ID: " );
-		String idToView = scanner.nextLine();
-		while (!verifyIDFormat( idToView, entityName ))
+		for (int i = 0; i < list.size(); ++i)
 		{
-			System.out.println( "The ID formate is invalid, It should be a number or should have " + getEntityIDPrefix( entityName ) + "-097 formate" );
-			System.out.print( "Enter the ID: " );
-			idToView = scanner.nextLine();
+			if (list.get( i )[0].equals( entityID )) return i;
 		}
-		if(idToView.split( "-" ).length>1){
-			idToView=idToView.split( "-" )[1];
-		}
-		int idInteger = Integer.parseInt( idToView );
-		int index = getEntityIndex( entityName, idInteger, list );
-		if (index != -1)
-			return index;
-		else System.out.println( entityName + " by the ID " + idToView + " not found." );
 		return -1;
+	}
+
+	private static boolean patientExists(String patientID)
+	{
+		for (String[] patient : patientsList)
+		{
+			if (patient[0].equals( patientID ))
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 //--------------------------------------------------------------------------------------------------------------------//
 
-	public static boolean checkLoginDetailsForAdmin(String username, String password)
+	public static boolean verifyLoginDetails(int role)
 	{
-		return (username.equals( adminUsername ) && password.equals( adminPassword ));
-	}
-
-	public static boolean checkLoginDetailsForDoctor(String username, String password)
-	{
-		for (String[] docInfo : doctorsList)
+		int loginTries = 1;
+		while (!getCredentials( role ))
 		{
-			if (username.equals( docInfo[docUsernameIndex] ))
-			{
-				return docInfo[docPasswordIndex].equals( password );
-			}
-		}
-		return false;
-	}
+			System.out.println( "Invalid Login Details! " + (5 - loginTries) + " tries left." );
 
-	public static boolean checkLoginDetailsForReceptionist(String username, String password)
-	{
-		for (String[] recpInfo : receptionistsList)
-		{
-			if (username.equals( recpInfo[receptionistUsernameIndex] ))
+			if (loginTries == 5)
 			{
-				return recpInfo[receptionistPasswordIndex].equals( password );
+				System.out.println( "You have entered wrong credentials " + loginTries + " times, returning to Main Menu" );
+
+				return false;
 			}
+			loginTries++;
 		}
-		return false;
+
+		// This code is reached only if the password is correct
+		System.out.println( "Logged In Successfully" );
+		return true;
 	}
 
 	public static boolean getCredentials(int role)
@@ -1307,25 +1343,35 @@ public class Main
 		return false;
 	}
 
-	public static boolean verifyLoginDetails(int role)
+	public static boolean checkLoginDetailsForAdmin(String username, String password)
 	{
-		int loginTries = 1;
-		while (!getCredentials( role ))
+		return (username.equals( adminUsername ) && password.equals( adminPassword ));
+	}
+
+	public static boolean checkLoginDetailsForDoctor(String username, String password)
+	{
+		for (String[] docInfo : doctorsList)
 		{
-			System.out.println( "Invalid Login Details! " + (5 - loginTries) + " tries left." );
-
-			if (loginTries == 5)
+			if (username.equals( docInfo[docUsernameIndex] ))
 			{
-				System.out.println( "You have entered wrong credentials " + loginTries + " times, returning to Main Menu" );
-
-				return false;
+				boolean isMatched = docInfo[docPasswordIndex].equals( password );
+				if (isMatched) loggedInDoctorIndex = getEntityIndexByID( docInfo[0], doctorsList );
+				return isMatched;
 			}
-			loginTries++;
 		}
+		return false;
+	}
 
-		// This code is reached only if the password is correct
-		System.out.println( "Logged In Successfully" );
-		return true;
+	public static boolean checkLoginDetailsForReceptionist(String username, String password)
+	{
+		for (String[] recpInfo : receptionistsList)
+		{
+			if (username.equals( recpInfo[receptionistUsernameIndex] ))
+			{
+				return recpInfo[receptionistPasswordIndex].equals( password );
+			}
+		}
+		return false;
 	}
 
 	public static boolean isStrongPassword(String password)
@@ -1382,7 +1428,7 @@ public class Main
 
 //--------------------------------------------------------------------------------------------------------------------//
 
-	public static boolean userExist(String username, int role)
+	public static boolean entityExist(String username, int role)
 	{
 		if (role == 1)
 		{
@@ -1401,40 +1447,18 @@ public class Main
 
 		return false;
 	}
-	public static ArrayList<Integer> getEntityIndex(String name, ArrayList<String[]> list)
+
+	public static ArrayList<Integer> getEntitiesIndexes(String name, ArrayList<String[]> list)
 	{
 		ArrayList<Integer> indexesArray = new ArrayList<>();
 		for (int i = 0; i < list.size(); i++)
 		{
 			if (list.get( i )[1].contains( name ))
 			{
-				indexesArray.add(i);
+				indexesArray.add( i );
 			}
 		}
 		return indexesArray;
-	}
-
-
-	public static String getEntityID(String entityName, int id)
-	{
-		switch (entityName)
-		{
-			case "Doctor":
-				return "DOC-" + String.format( "%03d", id );
-			case "Receptionist":
-				return "REP-" + String.format( "%03d", id );
-			case "Ward":
-				return "W-" + String.format( "%03d", id );
-			case "Patient":
-				return "P-" + String.format( "%03d", id );
-			case "Diagnosis":
-				return "DIA-" + String.format( "%03d", id );
-			case "Appointment":
-				return "APT-" + String.format( "%03d", id );
-			default:
-				return "";
-		}
-
 	}
 
 	public static String getEntityIDPrefix(String entityName)
@@ -1442,21 +1466,28 @@ public class Main
 		switch (entityName)
 		{
 			case "Doctor":
-				return "DOC";
+				return "DOC-";
 			case "Receptionist":
-				return "REP";
+				return "REP-";
 			case "Ward":
-				return "W";
+				return "W-";
 			case "Patient":
-				return "P";
+				return "P-";
 			case "Diagnosis":
-				return "DIA";
+				return "DIA-";
 			case "Appointment":
-				return "APT";
+				return "APT-";
+			case "Submission":
+				return "SUB-";
 			default:
-				return "";
+				throw new IllegalArgumentException("Invalid Entity Type Passed");
 		}
 
+	}
+
+	public static String getEntityID(String entityName, int id)
+	{
+		return getEntityIDPrefix( entityName ) + String.format( "%03d", id );
 	}
 
 	public static int getEntityIndex(String entityName, int id, ArrayList<String[]> list)
@@ -1510,8 +1541,11 @@ How is the handling of global variables like number of entites and admin passwor
 			case "Appointment":
 				numberOfEntitiesArray[5] += 1;
 				return getEntityID( "Appointment", numberOfEntitiesArray[5] );
+			case "Submission":
+				numberOfEntitiesArray[6] += 1;
+				return getEntityID( "Submission", numberOfEntitiesArray[6] );
 			default:
-				return "";
+				throw new IllegalArgumentException("Invalid Entity Type Passed");
 		}
 	}
 
@@ -1598,58 +1632,25 @@ How is the handling of global variables like number of entites and admin passwor
 	{
 		Runnable r2 = () ->
 		{
-
+			try
 			{
-				try
+				FileWriter docFWriter = new FileWriter( filePath, false );
+				PrintWriter pw = new PrintWriter( docFWriter );
+				for (String[] data : dataList)
 				{
-					FileWriter docFWriter = new FileWriter( filePath, false );
-					PrintWriter pw = new PrintWriter( docFWriter );
-					for (String[] data : dataList)
-					{
-						pw.println( Arrays.toString( data ) );
-					}
-					pw.close();
+					pw.println( Arrays.toString( data ) );
 				}
-				catch (IOException e)
-				{
-					System.out.printf( e.getMessage() );
-				}
+				pw.close();
 			}
-
-
+			catch (IOException e)
+			{
+				System.out.printf( e.getMessage() );
+			}
 		};
 		Thread t = new Thread( r2 );
 		t.start();
 	}
 
-	public static void updateDatabaseFile(String nameOfEntityChanged)
-	{
-		if (nameOfEntityChanged.equals( "Doctor" ))
-		{
-
-		}
-		else if (nameOfEntityChanged.equals( "Receptionist" ))
-		{
-			updateDatabaseFileThread( receptionistDataFilePath, receptionistsList );
-		}
-		else if (nameOfEntityChanged.equals( "Ward" ))
-		{
-			updateDatabaseFileThread( wardDataFilePath, wardsList );
-		}
-		else if (nameOfEntityChanged.equals( "Patient" ))
-		{
-			updateDatabaseFileThread( patientDataFilePath, patientsList );
-		}
-		else if (nameOfEntityChanged.equals( "Diagnosis" ))
-		{
-			updateDatabaseFileThread( diagnosisDataFilePath, diagnosisList );
-		}
-		else if (nameOfEntityChanged.equals( "Appointment" ))
-		{
-			updateDatabaseFileThread( appointmentsDataFilePath, appointmentsList );
-		}
-
-	}
 
 	private static void readDataFromFileToArrayList(File file, ArrayList<String[]> dataList)
 	{
@@ -1659,115 +1660,16 @@ How is the handling of global variables like number of entites and admin passwor
 			{
 				while (reading.hasNextLine())
 				{
-					String[] data = reading
-							.nextLine()
-							.replaceAll( "[\\[\\]]", "" )
-							.split( ", " );
+					String[] data = reading.nextLine().replaceAll( "[\\[\\]]", "" ).split( ", " );
+
 					dataList.add( data );
 				}
 			}
 			catch (FileNotFoundException e)
 			{
-				e.printStackTrace();
+				System.out.println( "Something went wrong while Reading from Variables file." );
 			}
 		}
-	}
-
-//--------------------------------------------------------------------------------------------------------------------//
-
-	public static void addDummyDoctor()
-	{
-		String doctorID = generateID( "Doctor" );
-		String doctorName = "Doctor" + RandomStringUtils.randomNumeric( 2 );
-		String timingStart = RandomStringUtils.randomNumeric( 1 ) + "AM";
-		String timingEnd = RandomStringUtils.randomNumeric( 1 ) + "PM";
-		String ward = "Ward" + RandomStringUtils.randomNumeric( 2 );
-		String specialty = "Specialty" + RandomStringUtils.randomNumeric( 2 );
-		String username = RandomStringUtils.randomAlphanumeric( 8 );
-		String password = RandomStringUtils.randomAlphanumeric( 8 );
-		String[] dummyDoctor = {
-				doctorID,
-				doctorName,
-				timingStart,
-				timingEnd,
-				ward,
-				specialty,
-				username,
-				password,
-		};
-		doctorsList.add( dummyDoctor );
-	}
-
-	public static void addDummyReceptionist()
-	{
-		String receptionistID = generateID( "Receptionist" );
-		String receptionistName = "Receptionist" + RandomStringUtils.randomNumeric( 2 );
-		String username = RandomStringUtils.randomAlphanumeric( 8 );
-		String password = RandomStringUtils.randomAlphanumeric( 8 );
-
-		String[] dummyReceptionist = {receptionistID, receptionistName, username, password};
-		receptionistsList.add( dummyReceptionist );
-	}
-
-	public static void addDummyWard()
-	{
-		String wardID = generateID( "Ward" );
-		String wardName = "Ward" + RandomStringUtils.randomNumeric( 2 );
-		String totalBeds = RandomStringUtils.randomNumeric( 2 );
-		String occupiedBeds = RandomStringUtils.randomNumeric( 1 );
-		String wardType = "Type" + RandomStringUtils.randomNumeric( 2 );
-
-		String[] dummyWard = {
-				wardID,
-				wardName,
-				totalBeds,
-				occupiedBeds,
-				wardType,
-		};
-		wardsList.add( dummyWard );
-	}
-
-	public static void addDummyPatient()
-	{
-		String patientID = generateID( "Patient" );
-		String patientName = "Patient" + RandomStringUtils.randomNumeric( 2 );
-		String gender = (RandomUtils.nextInt( 0, 1 ) == 1) ? "Male" : "Female";
-		String age = RandomStringUtils.randomNumeric( 2 );
-		String contact = RandomStringUtils.randomNumeric( 10 );
-
-		String[] dummyPatient = {patientID, patientName, gender, age, contact};
-		patientsList.add( dummyPatient );
-	}
-
-	public static void createFakeDataFiles(int records)
-	{
-		System.out.println( "Creating Fake Files For Representation Purpose" );
-		for (int i = 0; i < records; ++i)
-		{
-			addDummyDoctor();
-			addDummyReceptionist();
-			addDummyWard();
-			addDummyPatient();
-		}
-		updateDatabaseFileThread( doctorDataFilePath, doctorsList );
-		updateDatabaseFileThread( appointmentsDataFilePath, appointmentsList );
-		updateDatabaseFileThread( diagnosisDataFilePath, diagnosisList );
-		updateDatabaseFileThread( patientDataFilePath, patientsList );
-		updateDatabaseFileThread( wardDataFilePath, wardsList );
-		updateDatabaseFileThread( receptionistDataFilePath, receptionistsList );
-		updateSystemVariablesFile();
-	}
-
-	private static void optionCreateFakeFiles()
-	{
-		System.out.print( "How many records to make? :" );
-		while (!scanner.hasNextInt())
-		{
-			System.out.println( "Invalid Input, Please Enter only numbers " );
-			System.out.print( "How many records to make? :" );
-		}
-		int records = scanner.nextInt();
-		createFakeDataFiles( records );
 	}
 
 //--------------------------------------------------------------------------------------------------------------------//
@@ -1789,7 +1691,6 @@ How is the handling of global variables like number of entites and admin passwor
 			dir.mkdir();
 			setAdminCredentialsForTheFirstTime();
 			updateSystemVariablesFile();
-			//createFakeDataFiles(50);
 		}
 	}
 
@@ -1800,7 +1701,7 @@ How is the handling of global variables like number of entites and admin passwor
 		byte[] encryptArray = Base64.getEncoder().encode( strip.getBytes() );
 		try
 		{
-			encstr = new String( encryptArray, "UTF-8" );
+			encstr = new String( encryptArray, StandardCharsets.UTF_8 );
 		}
 		catch (Exception o)
 		{
@@ -1818,7 +1719,7 @@ How is the handling of global variables like number of entites and admin passwor
 		byte[] decarray = Base64.getDecoder().decode( dectryptArray );
 		try
 		{
-			decstr = new String( decarray, "UTF-8" );
+			decstr = new String( decarray, StandardCharsets.UTF_8 );
 		}
 		catch (Exception o)
 		{
