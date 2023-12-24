@@ -2,6 +2,7 @@ package org.example;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -63,7 +64,7 @@ public class Main
 	//its id will be generated uniquely by incrementing old number
 	static int[] numberOfEntitiesArray = new int[7];
 	//[adminUsername, adminPassword, numberOfEntitiesArray]
-	static String[] globalVariablesArray = new String[8];
+	static String[] globalVariablesArray = new String[9];
 	static Scanner scanner = new Scanner( System.in );
 	static String adminPassword = "kaleem";
 	static String adminUsername = "kaleem";
@@ -84,7 +85,7 @@ public class Main
 
 		while (!menu.isEmpty())
 		{
-			int lineWidth = 40;
+			int lineWidth = 100;
 
 			displayCenterAlignedText( menu.get( 0 ), lineWidth );
 
@@ -318,12 +319,14 @@ public class Main
 	{
 		try
 		{
-			LocalTime.parse( date, DateTimeFormatter.ofPattern( "dd-MM-yyyy") );
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+			LocalDate.parse(date, formatter);
+
 			return true;
 		}
 		catch (DateTimeParseException e)
 		{
-			System.out.println( "The date entered is in incoorect format ,It should be like 02-02-2024" );
+			System.out.println( "The date entered is in incoorect format ,It should be like 02/02/2024" );
 			return false;
 		}
 	}
@@ -1074,6 +1077,21 @@ public class Main
 			wardPatientSubmissionList.add( newSubmission );
 
 			updateDatabaseFileThread( wardSubmissionsDataFilePath, wardPatientSubmissionList );
+			System.out.println();
+			getWardPatients(newSubmission[2]);
+		}
+	}
+	public static void getWardPatients( String wardID){
+		for(String[] sub:wardPatientSubmissionList){
+			String patientID= sub[1];
+			String submissionWardID= sub[2];
+			String[] patient= new String[5];
+			int index = getEntityIndexByID(patientID,patientsList  );
+			if(index!= -1)
+				patient= patientsList.get( index );
+
+			if(submissionWardID.equals( wardID ))
+				headingsDisplayer("Patient",patient );
 		}
 	}
 	private static void handleCreateAppointment()
@@ -1081,7 +1099,7 @@ public class Main
 		int doctorIndex = getEntityIndexByIDNameSelection( "Select", "Doctor", doctorsList );
 		int patientIndex = getEntityIndexByIDNameSelection( "Select", "Patient", patientsList );
 		String[] doctor = doctorsList.get(doctorIndex);
-		String[] patient = doctorsList.get(patientIndex);
+		String[] patient = patientsList.get(patientIndex);
 		String docID= doctor[0];
 		String patientID= patient[0];
 
@@ -1097,11 +1115,12 @@ public class Main
 		String appointmentDate;
 		do
 		{
-			System.out.print( "Enter appointment time (e.g 10:00 AM): " );
+			System.out.print( "Enter appointment Date (e.g dd/MM/yyyy): " );
 			appointmentDate = scanner.nextLine();
 		}
 		while (!verifyDateInput( appointmentDate ));
-		appointmentDate = LocalTime.parse( appointmentDate, DateTimeFormatter.ofPattern( "dd-MM-yyyy") ).toString();
+		appointmentDate = LocalDate.parse( appointmentDate, DateTimeFormatter.ofPattern("dd/MM/yyyy") ).toString();
+
 
 		// Creating a new array to store patient details
 		String[] newAppointment = {
@@ -1115,18 +1134,20 @@ public class Main
 		appointmentsList.add( newAppointment );
 
 		updateDatabaseFileThread( appointmentsDataFilePath, appointmentsList );
-		System.out.println("The Appointment "+ newAppointment[0] + " is registered with " +doctor[1] + "at "+ appointmentTime + " " +appointmentDate);
+		System.out.println("The Appointment "+ newAppointment[0] + " is registered with " +doctor[1] + " at "+ appointmentTime + " " +appointmentDate);
 
 	}
 
 	private static void handleAppointmentStatus(){
 
 		int index = getEntityIndexByIDInput("Appointment", appointmentsList);
+		String[] appointment =new String[6];
 		if(index != -1){
-			String[] appointment= appointmentsList.get( index );
+			appointment= appointmentsList.get( index );
 			appointment[5]= "Completed";
 		}
 		updateDatabaseFileThread( appointmentsDataFilePath, appointmentsList );
+		System.out.println("The Appointment " + appointment[0]+" is marked as completed" );
 	}
 
 	private static void handlecheckDoctorsAvailability()
@@ -1298,6 +1319,115 @@ public class Main
 		return false;
 	}
 
+	private static void headingsDisplayer(String entity, String[] arrayOfEntity){
+		switch (entity){
+
+			case "Doctor":
+				processDoctorDisplay(arrayOfEntity);
+				break;
+
+			case "Appointment":
+				processAppointmentDisplay(arrayOfEntity);
+				break;
+
+			case "Diagnosis":
+				processDiagnosisDisplay(arrayOfEntity);
+				break;
+
+			case "Patient":
+				processPatientDisplay(arrayOfEntity);
+				break;
+
+			case "Receptionist":
+				processReceptionistDisplay(arrayOfEntity);
+				break;
+
+			case "Ward":
+				processWardDisplay(arrayOfEntity);
+				break;
+		}
+	}
+
+	private static void processWardDisplay(String[] arrayOfEntity) {
+		String wardId = arrayOfEntity[0];
+		String wardName = arrayOfEntity[1];
+		String totalBeds = arrayOfEntity[2];
+		String occupiedBeds = arrayOfEntity[3];
+		String wardType = arrayOfEntity[4];
+
+		System.out.println("\nList of Wards:");
+		System.out.printf("%-15s %-20s %-15s %-15s %-10s\n", "Ward ID", "Ward Name", "Total Beds", "Occupied Beds", "Type");
+		System.out.printf("%-15s %-20s %-15s %-15s %-10s\n", wardId, wardName, totalBeds, occupiedBeds, wardType);
+	}
+
+	private static void processReceptionistDisplay(String[] arrayOfEntity) {
+		String recepId = arrayOfEntity[0];
+		String recepName = arrayOfEntity[1];
+		String username = arrayOfEntity[2];
+		String password = arrayOfEntity[3];
+
+		System.out.println("\nList of Receptionists:");
+		System.out.printf("%-15s %-20s %-15s %-15s\n", "Receptionist ID", "Receptionist Name", "Username", "Password");
+		System.out.printf("%-15s %-20s %-15s %-15s\n", recepId, recepName, username, password);
+	}
+
+	private static void processPatientDisplay(String[] arrayOfEntity) {
+		String patientId = arrayOfEntity[0];
+		String patientName = arrayOfEntity[1];
+		String gender = arrayOfEntity[2];
+		String age = arrayOfEntity[3];
+		String contact = arrayOfEntity[4];
+
+		System.out.println("\nList of Patients:");
+		System.out.printf("%-15s %-20s %-10s %-5s %-15s\n", "Patient ID", "Patient Name", "Gender", "Age", "Contact");
+		System.out.printf("%-15s %-20s %-10s %-5s %-15s\n", patientId, patientName, gender, age, contact);
+	}
+
+	private static void processDiagnosisDisplay(String[] arrayOfEntity) {
+		String diagnosisId = arrayOfEntity[0];
+		String patientIdDiagnosis = arrayOfEntity[1];
+		String doctorIdDiagnosis = arrayOfEntity[2];
+		String prescriptions = arrayOfEntity[3];
+		String diagnosis = arrayOfEntity[4];
+		String appointmentIdDiagnosis = arrayOfEntity[5];
+
+		System.out.println("\nList of Diagnoses:");
+		System.out.printf("%-15s %-15s %-15s %-20s %-20s %-15s\n", "Diagnosis ID", "Patient ID", "Doctor ID",
+				"Prescriptions", "Diagnosis", "Appointment ID");
+		System.out.printf("%-15s %-15s %-15s %-20s %-20s %-15s\n", diagnosisId, patientIdDiagnosis,
+				doctorIdDiagnosis, prescriptions, diagnosis, appointmentIdDiagnosis);
+	}
+
+	private static void processAppointmentDisplay(String[] arrayOfEntity) {
+		String appointmentId = arrayOfEntity[0];
+		String patientIdAppointment = arrayOfEntity[1];
+		String doctorIdAppointment = arrayOfEntity[2];
+		String appointmentTime = arrayOfEntity[3];
+		String appointmentDate = arrayOfEntity[4];
+		String appointmentStatus = arrayOfEntity[5];
+
+		System.out.println("\nList of Appointments:");
+		System.out.printf("%-15s %-15s %-15s %-20s %-15s %-20s\n", "Appointment ID", "Patient ID", "Doctor ID",
+				"Appointment Time", "Appointment Date", "Appointment Status");
+		System.out.printf("%-15s %-15s %-15s %-20s %-15s %-20s\n", appointmentId, patientIdAppointment,
+				doctorIdAppointment, appointmentTime, appointmentDate, appointmentStatus);
+	}
+
+	private static void processDoctorDisplay(String[] arrayOfEntity) {
+		String doctorId = arrayOfEntity[0];
+		String doctorName = arrayOfEntity[1];
+		String startTime = arrayOfEntity[2];
+		String endTime = arrayOfEntity[3];
+		String ward = arrayOfEntity[4];
+		String specialty = arrayOfEntity[5];
+		// Count the number of appointments made by each doctor
+		long appointmentsCount = countAppointmentsForDoctor(doctorId);
+		System.out.println( "\nList of Doctors:" );
+		System.out.printf( "%-10s %-20s %-15s %-15s %-20s %-20s %-15s\n", "Doctor ID", "Doctor Name",
+				"Start Time", "End Time", "Ward", "Specialty", "Appointments Count" );
+		System.out.printf("%-10s %-20s %-15s %-15s %-20s %-20s %-15s\n", doctorId, doctorName, startTime,
+				endTime, ward, specialty, appointmentsCount);
+	}
 //--------------------------------------------------------------------------------------------------------------------//
 
 	public static boolean verifyLoginDetails(int role)
