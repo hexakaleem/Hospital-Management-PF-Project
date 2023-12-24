@@ -11,7 +11,7 @@ import java.util.*;
 public class Main
 {
 	static final String DATABASE_DIR = "data";
-	static final String DOCTORS_FILENAME = "data/Doctors.txt";
+	static final String DOCTORS_FILE_NAME = "data/Doctors.txt";
 	static final String RECEPTIONISTS_FILE_NAME = "data/Receptionists.txt";
 	static final String WARDS_FILE_NAME = "data/Wards.txt";
 	static final String PATIENTS_FILE_NAME = "data/Patients.txt";
@@ -32,7 +32,7 @@ public class Main
 	static ArrayList<String[]> diagnosisList = new ArrayList<>();
 	// ['Appointment ID', 'Patient ID' , 'Doctor ID','Time Start','Time End']
 	static ArrayList<String[]> appointmentsList = new ArrayList<>();
-	static File doctorDataFilePath = new File( DOCTORS_FILENAME );
+	static File doctorDataFilePath = new File( DOCTORS_FILE_NAME );
 	static File receptionistDataFilePath = new File( RECEPTIONISTS_FILE_NAME );
 	static File wardDataFilePath = new File( WARDS_FILE_NAME );
 	static File patientDataFilePath = new File( PATIENTS_FILE_NAME );
@@ -234,10 +234,10 @@ public class Main
 				addWard();
 				break;
 			case "Edit Ward":
-				editWard();
+				handleEditWardDetails();
 				break;
 			case "Get Ward Details":
-				getWardDetails();
+				handleGetWardDetails();
 				break;
 			case "Remove Ward":
 				handleRemoveWard();
@@ -259,13 +259,13 @@ public class Main
 				addPatient();
 				break;
 			case "Get Patient Details":
-				displayAllPatientDetails();
+				handleGetPatientDetails();
 				break;
 			case "Edit Patient Details":
 				handleEditPatientDetailsMenu();
 				break;
 			case "Submit Patient To Ward":
-				submitPatientToWard();
+				handleSubmitPatientToWard();
 				break;
 			case "Check Doctor's Availability":
 				checkDoctorsAvailability();
@@ -334,42 +334,30 @@ public class Main
 		doctorsList.add( newDoctor );
 
 		// Adding the doctor to the file data
-		updateDatabaseFile( "Doctor" );
+		updateDatabaseFileThread( doctorDataFilePath, doctorsList );
 		System.out.println( "New doctor added successfully." );
 	}
 
 
 	private static void handleEditDoctorDetailsMenu()
 	{
-		showNameIDSelectionMenu( "Edit", "Doctor" );
-		int editOption = scanner.nextInt();
-		scanner.nextLine();
+		int option = getNameIDSelection( "Edit", "Doctor" );
 
-		switch (editOption)
+		int index=-1;
+		switch (option)
 		{
 			case 0:
 				return;
 			case 1:
-				editDoctorByName();
-				break;
+				index = getEntityIndexByNameInput( "Doctor", doctorsList );
+				if(index!=-2)
+					break;
 			case 2:
-				editDoctorByID();
+				index = getEntityIndexByIDInput( "Doctor", doctorsList );
 				break;
 			default:
 				System.out.println( "Invalid edit option. No changes made." );
 		}
-	}
-
-	public static void editDoctorByName()
-	{
-		int index = getEntityIndexByNameInput( "Doctor", doctorsList );
-		if (index != -1)
-			editDoctor( index );
-	}
-
-	public static void editDoctorByID()
-	{
-		int index = getEntityIndexByIDInput( "Doctor", doctorsList );
 		if (index != -1)
 			editDoctor( index );
 	}
@@ -426,45 +414,32 @@ public class Main
 			default:
 				System.out.println( "Invalid edit choice. No changes made." );
 		}
-		updateDatabaseFile( "Doctor" );
+		updateDatabaseFileThread( doctorDataFilePath, doctorsList );
 		System.out.println( "Details of Doctor '" + doctorDetails[0] + "' after edit: " + Arrays.toString( doctorDetails ) );
 	}
 
 	private static void handleGetDoctorDetails()
 	{
-		showNameIDSelectionMenu( "Show", "Doctor" );
-		int option = scanner.nextInt();
-		scanner.nextLine();
+		int option = getNameIDSelection( "Show", "Doctor" );
 
+		int index=-1;
 		switch (option)
 		{
 			case 0:
 				return;
 			case 1:
-				getDoctorDetailsByName();
-				break;
+				index = getEntityIndexByNameInput( "Doctor", doctorsList );
+				if(index!=-2)
+					break;
 			case 2:
-				getDoctorDetailsByID();
+				index = getEntityIndexByIDInput( "Doctor", doctorsList );
 				break;
 			default:
 				System.out.println( "Invalid edit option." );
 		}
-	}
-
-	public static void getDoctorDetailsByName()
-	{
-		int index = getEntityIndexByNameInput( "Doctor", doctorsList );
 		if (index != -1)
 			showDoctorDetails( index );
 	}
-
-	public static void getDoctorDetailsByID()
-	{
-		int index = getEntityIndexByIDInput( "Doctor", doctorsList );
-		if (index != -1)
-			showDoctorDetails( index );
-	}
-
 	private static void showDoctorDetails(int index)
 	{
 		String[] doctorDetails = doctorsList.get( index );
@@ -473,43 +448,30 @@ public class Main
 
 	private static void handleRemoveDoctor()
 	{
-		showNameIDSelectionMenu( "Remove", "Doctor" );
-		int editOption = scanner.nextInt();
-		scanner.nextLine();
+		int option = getNameIDSelection( "Remove", "Doctor" );
 
-		switch (editOption)
+		int index=-1;
+		switch (option)
 		{
 			case 0:
 				return;
 			case 1:
-				removeDoctorByName();
-				break;
+				index = getEntityIndexByNameInput( "Doctor", doctorsList );
+				if(index!=-2)
+					break;
 			case 2:
-				removeDoctorByID();
+				index = getEntityIndexByIDInput( "Doctor", doctorsList );
 				break;
 			default:
 				System.out.println( "Invalid edit option. No changes made." );
 		}
-	}
-
-	public static void removeDoctorByName()
-	{
-		int index = getEntityIndexByNameInput( "Doctor", doctorsList );
 		if (index != -1)
 			removeDoctor( index );
 	}
-
-	public static void removeDoctorByID()
-	{
-		int index = getEntityIndexByIDInput( "Doctor", doctorsList );
-		if (index != -1)
-			removeDoctor( index );
-	}
-
 	private static void removeDoctor(int index)
 	{
 		doctorsList.remove( index );
-		updateDatabaseFile( "Doctor" );
+		updateDatabaseFileThread( doctorDataFilePath, doctorsList );
 		System.out.println( "Doctor has been deleted." );
 	}
 
@@ -581,42 +543,29 @@ public class Main
 		receptionistsList.add( newReceptionist );
 
 		// Adding the doctor to the file data
-		updateDatabaseFile( "Receptionist" );
+		updateDatabaseFileThread( receptionistDataFilePath, receptionistsList );
 		System.out.println( "New Receptionist added successfully." );
 
 	}
 
 	private static void handleRemoveReceptionist()
 	{
-		showNameIDSelectionMenu( "Remove", "Receptionist" );
-		int editOption = scanner.nextInt();
-		scanner.nextLine();
+		int option = getNameIDSelection( "Remove", "Receptionist" );
 
-		switch (editOption)
+		int index =-1;
+				switch (option)
 		{
 			case 0:
 				return;
 			case 1:
-				removeReceptionistByName();
-				break;
+				index = getEntityIndexByNameInput( "Receptionist", receptionistsList );
+				if (index != -2) break;
 			case 2:
-				removeReceptionistByID();
+				index = getEntityIndexByIDInput( "Receptionist", receptionistsList );
 				break;
 			default:
 				System.out.println( "Invalid edit option. No changes made." );
 		}
-	}
-
-	public static void removeReceptionistByName()
-	{
-		int index = getEntityIndexByNameInput( "Receptionist", receptionistsList );
-		if (index != -1)
-			removeReceptionist( index );
-	}
-
-	public static void removeReceptionistByID()
-	{
-		int index = getEntityIndex( "Receptionist", receptionistsList );
 		if (index != -1)
 			removeReceptionist( index );
 	}
@@ -624,41 +573,29 @@ public class Main
 	private static void removeReceptionist(int index)
 	{
 		receptionistsList.remove( index );
-		updateDatabaseFile( "Receptionist" );
+		updateDatabaseFileThread( receptionistDataFilePath, receptionistsList );
 		System.out.println( "Receptionist with ID '" + index + "' has been deleted." );
 	}
 
 	private static void handleEditReceptionistDetailsMenu()
 	{
-		showNameIDSelectionMenu( "Edit", "Receptionist" );
-		int editOption = scanner.nextInt();
-		scanner.nextLine();
+		int option = getNameIDSelection( "Edit", "Receptionist" );
 
-		switch (editOption)
+		int index =-1;
+		switch (option)
 		{
 			case 0:
 				return;
 			case 1:
-				editReceptionistByName();
+				index = getEntityIndexByNameInput( "Receptionist", receptionistsList );
+				if (index != -2) break;
 				break;
 			case 2:
-				editReceptionistByID();
+				index = getEntityIndexByIDInput( "Receptionist", receptionistsList );
 				break;
 			default:
 				System.out.println( "Invalid edit option. No changes made." );
 		}
-	}
-
-	public static void editReceptionistByName()
-	{
-		int index = getEntityIndexByNameInput( "Receptionist", receptionistsList );
-		if (index != -1)
-			editReceptionist( index );
-	}
-
-	public static void editReceptionistByID()
-	{
-		int index = getEntityIndexByIDInput( "Receptionist", receptionistsList );
 		if (index != -1)
 			editReceptionist( index );
 	}
@@ -710,7 +647,7 @@ public class Main
 			default:
 				System.out.println( "Invalid edit choice. No changes made." );
 		}
-		updateDatabaseFile( "Receptionist" );
+		updateDatabaseFileThread( receptionistDataFilePath, receptionistsList );
 		System.out.println( "Details of Doctor '" + receptionistsListDetails[0] + "' after edit: " + Arrays.toString( receptionistsListDetails ) );
 	}
 
@@ -766,11 +703,33 @@ public class Main
 		wardsList.add( newWard );
 
 		// Adding the ward to the file data
-		updateDatabaseFile( "Ward" );
+
+		updateDatabaseFileThread( wardDataFilePath, wardsList );
 		System.out.println( "New Ward added successfully." );
 	}
 
-	private static void editWard()
+	private static void handleEditWardDetails()
+	{
+		int option =  getNameIDSelection( "Edit", "Ward" );
+
+		int index =-1;
+		switch (option)
+		{
+			case 0:
+				return;
+			case 1:
+				index = getEntityIndexByNameInput( "Ward", wardsList );
+				if (index != -2) break;
+			case 2:
+				index = getEntityIndexByIDInput( "Ward", wardsList );
+				break;
+			default:
+				System.out.println( "Invalid edit option. No changes made." );
+		}
+		if (index != -1)
+			editWard( index );
+	}
+	private static void editWard( int index)
 	{
 
 
@@ -800,78 +759,54 @@ public class Main
 
 	private static void handleRemoveWard()
 	{
-		showNameIDSelectionMenu( "Remove", "Ward" );
-		int editOption = scanner.nextInt();
-		scanner.nextLine();
+		int option =  getNameIDSelection( "Remove", "Ward" );
 
-		switch (editOption)
-		{
-			case 0:
-				return;
-			case 1:
-				removeWardByName();
-				break;
-			case 2:
-				removeWardByID();
-				break;
-			default:
-				System.out.println( "Invalid edit option. No changes made." );
-		}
-	}
-
-	public static void removeWardByName()
-	{
-		int index = getEntityIndexByNameInput( "Ward", wardsList );
-		if (index != -1)
-			handleRemoveWard( index );
-	}
-
-	public static void removeWardByID()
-	{
-		int index = getEntityIndexByIDInput( "Ward", wardsList );
-		if (index != -1)
-			handleRemoveWard( index );
-	}
-
-	private static void handleRemoveWard(int index)
-	{
-		wardsList.remove( index );
-		updateDatabaseFile( "Ward" );
-		System.out.println( "Ward has been deleted." );
-	}
-
-	private static void getWardDetails()
-	{
-
-		showNameIDSelectionMenu( "Show", "Ward" );
-		int option = scanner.nextInt();
-		scanner.nextLine();
-
+		int index=-1;
 		switch (option)
 		{
 			case 0:
 				return;
 			case 1:
-				getWardDetailsByName();
+				index = getEntityIndexByNameInput( "Ward", wardsList );
+				if (index != -2) break;
+			case 2:
+				index = getEntityIndexByIDInput( "Ward", wardsList );
+				break;
+			default:
+				System.out.println( "Invalid edit option. No changes made." );
+		}
+		if (index != -1)
+			removeWard( index );
+	}
+
+
+	private static void removeWard(int index)
+	{
+		wardsList.remove( index );
+		updateDatabaseFileThread( wardDataFilePath, wardsList );
+		System.out.println( "Ward has been deleted." );
+	}
+
+	private static void handleGetWardDetails()
+	{
+
+		int option =   getNameIDSelection( "Show", "Ward" );
+
+		int index=-1;
+		switch (option)
+		{
+			case 0:
+				return;
+			case 1:
+				index = getEntityIndexByNameInput( "Ward", wardsList );
+				if (index != -2) break;
 				break;
 			case 2:
-				getWardDetailsByID();
+				index = getEntityIndexByIDInput( "Ward", wardsList );
 				break;
 			default:
 				System.out.println( "Invalid edit option." );
 		}
-	}
-
-	public static void getWardDetailsByName()
-	{
-		int index = getEntityIndexByNameInput( "Ward", wardsList );
-		if (index != -1)
-			showWardDetails( index );
-	}
-
-	public static void getWardDetailsByID()
-	{
-		int index = getEntityIndexByIDInput( "Ward", wardsList );
 		if (index != -1)
 			showWardDetails( index );
 	}
@@ -901,8 +836,28 @@ public class Main
 	['Diagnosis ID','Patient ID','DoctorID','Prescriptions','Diagnosis','Appointment ID']
 */
 
-		//Handle to display options to for
+	//Handle to display options to for
 
+
+	private static void handleGetPatientHistory()
+	{
+		int option =   getNameIDSelection("Get History", "of Patient");
+
+		int index=-1;
+		switch (option){
+			case 0:
+				return;
+			case 1:
+				index = getEntityIndexByNameInput( "Patient", patientsList );
+				if (index != -2) break;
+			case 2:
+				index = getEntityIndexByIDInput( "Patient", patientsList );
+				break;
+
+		}
+		if (index != -1)
+			getPatientHistory(index);
+	}
 	private static void getPatientHistory(int index){
 		//Index of IDs of the patients in the different Lists:
 		final int patientIDIndex = 0;
@@ -929,41 +884,6 @@ public class Main
 				System.out.println(Arrays.toString(appointmentDetails));
 		}
 	}
-	private static void handleGetPatientHistory()
-	{
-		showNameIDSelectionMenu("Get History", "of Patient");
-		int option = scanner.nextInt();
-		scanner.nextLine();
-		switch (option){
-			case 0:
-				return;
-			case 1:
-				int index = getEntityIndexByNameInput( "Patient", patientsList );
-				if (index != -1)
-					getPatientHistory(index);
-
-				break;
-			case 2:
-				int index2 = getEntityIndexByIDInput( "Patient", patientsList );
-				if (index2 != -1)
-					getPatientHistory(index2);
-				break;
-
-		}
-	}
-
-//	private static void getPatientHistoryByName(){
-//		int index = getEntityIndexByNameInput( "Patient", patientsList );
-//		if (index != -1)
-//			getPatientHistory(index);
-//
-//	}
-//	private static void getPatientHistoryByID(){
-//		int index = getEntityByIDInput( "Patient", patientsList );
-//		if (index != -1)
-//			getPatientHistory(index);
-//	}
-
 	private static void addDiagnosis()
 	{
 		// Your logic for adding a diagnosis
@@ -1006,64 +926,55 @@ public class Main
 		patientsList.add( newPatient );
 
 		// Adding the patient to the file data
-		updateDatabaseFile( "Patient" );
+
+		updateDatabaseFileThread( patientDataFilePath, patientsList );
 		System.out.println( "New patient added successfully." );
 	}
 
+	private static void handleGetPatientDetails()
+	{
+		int option =   getNameIDSelection("Get Details", "of Patient");
+
+		int index=-1;
+		switch (option){
+			case 0:
+				return;
+			case 1:
+				index = getEntityIndexByNameInput( "Patient", patientsList );
+				if (index != -2) break;
+			case 2:
+				index = getEntityIndexByIDInput( "Patient", patientsList );
+				break;
+
+		}
+		if (index != -1)
+			getPatientDetails(index);
+	}
 	private static void getPatientDetails(int index)
 	{
 		String[] patientDetails = patientsList.get( index );
 		System.out.println( "Details of Patient '" + patientDetails[1] + "': " + Arrays.toString(patientDetails) );
 	}
 
-	private static void displayAllPatientDetails()
-	{
-		System.out.println( "\nList of Patients:" );
-		System.out.printf( "%-15s %-20s %-10s %-5s %-15s\n", "Patient ID", "Patient Name", "Gender", "Age", "Contact" );
-
-		for (String[] patient : patientsList)
-		{
-			String patientId = patient[0];
-			String patientName = patient[1];
-			String gender = patient[2];
-			String age = patient[3];
-			String contact = patient[4];
-
-			System.out.printf( "%-15s %-20s %-10s %-5s %-15s\n", patientId, patientName, gender, age, contact );
-		}
-	}
-
 	private static void handleEditPatientDetailsMenu()
 	{
-		showNameIDSelectionMenu( "Edit", "Patient" );
-		int editOption = scanner.nextInt();
-		scanner.nextLine();
+		int option =   getNameIDSelection( "Edit", "Patient" );
 
-		switch (editOption)
+		int index=-1;
+		switch (option)
 		{
 			case 0:
 				return;
 			case 1:
-				editPatientByName();
+				index = getEntityIndexByNameInput( "Patient", patientsList );
+				if (index != -2) break;
 				break;
 			case 2:
-				editPatientByID();
+				index = getEntityIndexByIDInput( "Patient", patientsList );
 				break;
 			default:
 				System.out.println( "Invalid edit option. No changes made." );
 		}
-	}
-
-	public static void editPatientByName()
-	{
-		int index = getEntityIndexByNameInput( "Patient", patientsList );
-		if (index != -1)
-			editPatient( index );
-	}
-
-	public static void editPatientByID()
-	{
-		int index = getEntityIndexByIDInput( "Patient", patientsList );
 		if (index != -1)
 			editPatient( index );
 	}
@@ -1119,12 +1030,57 @@ public class Main
 			default:
 				System.out.println( "Invalid edit choice. No changes made." );
 		}
-		updateDatabaseFile( "Patient" );
+		updateDatabaseFileThread( patientDataFilePath, patientsList );
 		System.out.println( "Details of Patient '" + patientDetails[0] + "' after edit: " + Arrays.toString( patientDetails ) );
 	}
 
-	private static void submitPatientToWard()
-	{    // Your logic for submitting a patient to a ward
+	private static void handleSubmitPatientToWard()
+	{
+		int option =    getNameIDSelection( "Submit", "Patient" );
+
+		int patientIndex=-1;
+		switch (option)
+		{
+			case 0:
+				return;
+			case 1:
+				patientIndex = getEntityIndexByNameInput( "Patient", patientsList );
+				if (patientIndex != -2) break;
+				break;
+			case 2:
+				patientIndex = getEntityIndexByIDInput( "Patient", patientsList );
+				break;
+			default:
+				System.out.println( "Invalid edit option. No changes made." );
+				return;
+		}
+		option =   getNameIDSelection( "Submit", "To Ward" );
+
+		int wardIndex=-1;
+		switch (option)
+		{
+			case 0:
+				return;
+			case 1:
+				wardIndex = getEntityIndexByNameInput( "Ward", wardsList );
+				if (wardIndex != -2) break;
+				break;
+			case 2:
+				wardIndex = getEntityIndexByIDInput( "Ward", wardsList );
+				break;
+			default:
+				System.out.println( "Invalid edit option. No changes made." );
+				return;
+		}
+		if (patientIndex != -1 && wardIndex!=-1 )
+			submitPatientToWard( patientIndex,wardIndex );
+	}
+	private static void submitPatientToWard(int patientIndex, int wardIndex )
+	{
+		String[] ward= wardsList.get( wardIndex );
+		String[] patient = patientsList.get( patientIndex );
+
+
 	}
 
 
@@ -1169,7 +1125,8 @@ public class Main
 			return timeToCheck.isAfter(start) && timeToCheck.isBefore(end);
 		}
 	}
-	public static void showNameIDSelectionMenu(String operation, String entity)
+
+	public static int getNameIDSelection(String operation, String entity)
 	{
 		System.out.printf( "\nSelect the option to %s %s: \n", operation, entity );
 		System.out.printf( "1. %s by Name\n", operation );
@@ -1182,17 +1139,30 @@ public class Main
 			System.out.println( "Only number are allowed!" );
 			System.out.print( "Enter your choice: " );
 		}
-
+		int selection = scanner.nextInt();
+		scanner.nextLine();
+		return selection;
 	}
 
 	public static int getEntityIndexByNameInput(String entityName, ArrayList<String[]> list)
 	{
 		System.out.print( "Enter the Name: " );
 		String nameToView = scanner.nextLine();
-		int index = getEntityIndex( nameToView, list );
-		if (index != -1)
-			return index;
-		else System.out.println( entityName + "by the name " + nameToView + " not found." );
+		ArrayList<Integer> indices= getEntityIndex( nameToView, list );
+		if (indices.size() > 1 ){
+			System.out.println("Multiple "+ entityName + "s have found: ");
+			for(Integer index : indices){
+				System.out.println(Arrays.toString( list.get( index ) ));
+			}
+			System.out.println("Enter the ID of the specified "+ entityName);
+			return -2;
+		}
+		else if(indices.size()==0 ) {
+			System.out.println( entityName + "by the name " + nameToView + " not found." );
+		}
+		else {
+			return indices.get(0);
+		}
 		return -1;
 	}
 
@@ -1217,7 +1187,7 @@ public class Main
 			System.out.print( "Enter the ID: " );
 			idToView = scanner.nextLine();
 		}
-		if(idToView.split( "-" ).length>0){
+		if(idToView.split( "-" ).length>1){
 			idToView=idToView.split( "-" )[1];
 		}
 		int idInteger = Integer.parseInt( idToView );
@@ -1375,18 +1345,19 @@ public class Main
 
 		return false;
 	}
-
-	public static int getEntityIndex(String name, ArrayList<String[]> list)
+	public static ArrayList<Integer> getEntityIndex(String name, ArrayList<String[]> list)
 	{
+		ArrayList<Integer> indexesArray = new ArrayList<>();
 		for (int i = 0; i < list.size(); i++)
 		{
-			if (name.equals( list.get( i )[1] ))
+			if (list.get( i )[1].contains( name ))
 			{
-				return i;
+				indexesArray.add(i);
 			}
 		}
-		return -1;
+		return indexesArray;
 	}
+
 
 	public static String getEntityID(String entityName, int id)
 	{
@@ -1599,7 +1570,7 @@ How is the handling of global variables like number of entites and admin passwor
 	{
 		if (nameOfEntityChanged.equals( "Doctor" ))
 		{
-			updateDatabaseFileThread( doctorDataFilePath, doctorsList );
+
 		}
 		else if (nameOfEntityChanged.equals( "Receptionist" ))
 		{
@@ -1621,7 +1592,7 @@ How is the handling of global variables like number of entites and admin passwor
 		{
 			updateDatabaseFileThread( appointmentsDataFilePath, appointmentsList );
 		}
-		updateSystemVariablesFile();
+
 	}
 
 	private static void readDataFromFileToArrayList(File file, ArrayList<String[]> dataList)
@@ -1728,7 +1699,7 @@ How is the handling of global variables like number of entites and admin passwor
 		updateDatabaseFileThread( patientDataFilePath, patientsList );
 		updateDatabaseFileThread( wardDataFilePath, wardsList );
 		updateDatabaseFileThread( receptionistDataFilePath, receptionistsList );
-		updateDatabaseFile( "VariablesArray" );
+		updateSystemVariablesFile();
 	}
 
 	private static void optionCreateFakeFiles()
@@ -1744,10 +1715,10 @@ How is the handling of global variables like number of entites and admin passwor
 	}
 
 //--------------------------------------------------------------------------------------------------------------------//
-/*
-* Main functions to run the programs
-*
-*/
+	/*
+	 * Main functions to run the programs
+	 *
+	 */
 
 	public static void InitializeProgramme()
 	{
