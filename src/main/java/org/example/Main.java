@@ -5,6 +5,8 @@ import org.apache.commons.lang3.RandomUtils;
 
 import java.io.*;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 
@@ -268,7 +270,7 @@ public class Main
 				handleSubmitPatientToWard();
 				break;
 			case "Check Doctor's Availability":
-				checkDoctorsAvailability();
+				handlecheckDoctorsAvailability();
 				break;
 			case "Get All Doctors":
 				getAllDoctors();
@@ -283,20 +285,39 @@ public class Main
 		return false;
 	}
 
-
+	//This function will check if the date entered is in the form our system can process.
+	public static boolean verifyTimeInput(String time){
+		try{
+			LocalTime.parse( time, DateTimeFormatter.ofPattern("hh:mm a", Locale.US) );
+			return true;
+		}catch(DateTimeParseException e){
+			System.out.println("The date entered is in incoorect format ,It should be like 06:00 PM" );
+			return false;
+		}
+	}
 	private static void registerNewDoctor()
 	{
 
 		System.out.print( " You are Registering a new Doctor, Enter -1 anytime to discard the process \n" );
 		System.out.print( "Enter doctor name: " );
 		String name = scanner.nextLine();
+		String timingStart;
 		if (name.trim().equals( "-1" )) return;
-		System.out.print( "Enter doctor`s shift start time (e.g 10AM): " );
-		String timingStart = scanner.nextLine();
-		if (timingStart.trim().equals( "-1" )) return;
-		System.out.print( "Enter doctor`s shift end time(e.g 3PM): " );
-		String timingEnd = scanner.nextLine();
-		if (timingEnd.trim().equals( "-1" )) return;
+		do{
+			System.out.print( "Enter doctor`s shift start time (e.g 10:00 AM): " );
+			timingStart = scanner.nextLine();
+			if (timingStart.trim().equals( "-1" )) return;
+		}while(!verifyTimeInput(  timingStart));
+		timingStart= LocalTime.parse( timingStart, DateTimeFormatter.ofPattern("hh:mm a", Locale.US) ).toString();
+
+		String timingEnd;
+		do{
+			System.out.print( "Enter doctor`s shift end time(e.g 03:00 PM): " );
+			timingEnd= scanner.nextLine();
+			if (timingEnd.trim().equals( "-1" )) return;
+		}while(!verifyTimeInput(  timingEnd));
+		timingEnd= LocalTime.parse( timingEnd, DateTimeFormatter.ofPattern("hh:mm a", Locale.US) ).toString();
+
 		System.out.print( "Enter doctor ward(e.g Cardiology): " );
 		String ward = scanner.nextLine();
 		if (ward.trim().equals( "-1" )) return;
@@ -304,6 +325,7 @@ public class Main
 		String specialty = scanner.nextLine();
 		if (specialty.trim().equals( "-1" )) return;
 		String username;
+		//Using simple do while loop was not able to print the message, so We had to convert it into while loop
 		while (true)
 		{
 			System.out.print( "Enter doctor username: " );
@@ -1083,10 +1105,37 @@ public class Main
 
 	}
 
-
-	private static void checkDoctorsAvailability()
+	private static void handlecheckDoctorsAvailability()
 	{
-		// Your logic for checking doctor's availability
+		int option = getNameIDSelection( "Check Availability", "Doctor" );
+
+		int index=-1;
+		switch (option)
+		{
+			case 0:
+				return;
+			case 1:
+				index = getEntityIndexByNameInput( "Doctor", doctorsList );
+				if(index!=-2)
+					break;
+			case 2:
+				index = getEntityIndexByIDInput( "Doctor", doctorsList );
+				break;
+			default:
+				System.out.println( "Invalid edit option. No changes made." );
+		}
+		if (index != -1)
+			checkDoctorsAvailability( index );
+	}
+	private static void checkDoctorsAvailability( int index)
+	{
+		String[] doctor= doctorsList.get( index );
+		//At index 2 start time is ther and at index 3 end time is there
+		String docName= doctor[1];
+		LocalTime now=  LocalTime.now();
+		boolean isAvailable= isTimeInRange( now.toString(), doctor[2], doctor[3] );
+		if (isAvailable) System.out.println("The Doctor is Available ");
+		else System.out.println("The docotor "+docName + " is not avaiable,Shift Times are "+ doctor[2] +"-"+doctor[3] );
 	}
 
 	private static void getAllDoctors()
@@ -1115,15 +1164,21 @@ public class Main
 	///Helper Functions for the main tasks
 
 	public static boolean isTimeInRange(String time, String startTime, String endTime) {
-		LocalTime timeToCheck = LocalTime.parse(time);
-		LocalTime start = LocalTime.parse(startTime);
-		LocalTime end = LocalTime.parse(endTime);
+		try{
+			LocalTime timeToCheck = LocalTime.parse(time);
+			LocalTime start = LocalTime.parse(startTime, DateTimeFormatter.ofPattern("hh:mm a", Locale.US) );
+			LocalTime end = LocalTime.parse(endTime, DateTimeFormatter.ofPattern("hh:mm a", Locale.US));
 
-		if (start.isAfter(end)) {
-			return timeToCheck.isAfter(start) || timeToCheck.isBefore(end);
-		} else {
-			return timeToCheck.isAfter(start) && timeToCheck.isBefore(end);
+			if (start.isAfter(end)) {
+				return timeToCheck.isAfter(start) || timeToCheck.isBefore(end);
+			} else {
+				return timeToCheck.isAfter(start) && timeToCheck.isBefore(end);
+			}
+		}catch (DateTimeParseException e){
+			System.out.println("Something went wrong!, Please make sure the files are not damaaged. Delete the gobalvariablesarray File if the error persists.");
+			return false;
 		}
+
 	}
 
 	public static int getNameIDSelection(String operation, String entity)
