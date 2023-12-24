@@ -183,6 +183,7 @@ public class Main
 				subMenu.add( "Get Patient Details" );
 				subMenu.add( "Edit Patient Details" );
 				subMenu.add( "Admit Patient To Ward" );
+				subMenu.add( "Checkout Patient From Ward" );
 				subMenu.add( "Create Appointment" );
 				subMenu.add( "Mark Appointnment As Done" );
 				subMenu.add( "Check Doctor's Availability" );
@@ -292,7 +293,9 @@ public class Main
 			case "Get All Doctors":
 				getAllDoctors();
 				break;
-
+			case "Checkout Patient From Ward":
+				handleCheckoutPatient();
+				break;
 
 			default:
 				return false;
@@ -1061,10 +1064,10 @@ public class Main
 		int patientIndex = getEntityIndexByIDNameSelection( "Submit", "Patient", patientsList );
 		int wardIndex = getEntityIndexByIDNameSelection( "Submit", "Ward", wardsList );
 		if (patientIndex != -1 && wardIndex != -1)
-			submitPatientToWard( patientIndex, wardIndex );
+			admitPatientToWard( patientIndex, wardIndex );
 	}
 
-	private static void submitPatientToWard(int patientIndex, int wardIndex)
+	private static void admitPatientToWard(int patientIndex, int wardIndex)
 	{
 		String[] ward = wardsList.get( wardIndex );
 		String[] patient = patientsList.get( patientIndex );
@@ -1072,7 +1075,7 @@ public class Main
 		String patientID= patient[0];
 
 		// ['Ward ID', 'Ward Name' , 'Total Beds','Occupied Beds','Type']
-		// ['Submission ID', 'Patient ID' , 'Ward ID','Time Start','Time End']
+		// ['Submission ID', 'Patient ID' , 'Ward ID','Time Start','Time End','Status']
 		int occupiedBeds= Integer.parseInt( ward[3] );
 		int totalBeds= Integer.parseInt( ward[2] );
 		LocalTime timeNow= LocalTime.now( ZoneId.of( "Asia/Karachi" ));
@@ -1085,6 +1088,7 @@ public class Main
 					patientID,
 					wardID,
 					timeNow.toString(),
+					LocalTime.MAX.toString(),
 			};
 			wardPatientSubmissionList.add( newSubmission );
 
@@ -1180,7 +1184,17 @@ public class Main
 		else
 			System.out.println( "The docotor " + docName + " is not avaiable,Shift Times are " + doctor[2] + "-" + doctor[3] );
 	}
+	private static void handleCheckoutPatient()
+	{
+		int index = getEntityIndexByIDNameSelection( "Checkout", "Patient", patientsList );
+		if (index != -1)
+			checkoutPatient( index );
+	}
+	public static void checkoutPatient(int index){
+		String[] patient= patientsList.get(index);
+		String patientID= patient[0];
 
+	}
 	private static void getAllDoctors()
 	{
 		System.out.println( "\nList of Doctors:" );
