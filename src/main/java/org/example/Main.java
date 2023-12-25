@@ -84,13 +84,23 @@ public class Main {
 
 		while (!menu.isEmpty()) {
 			int lineWidth = 100;
-
+			int sidesLength= lineWidth/10;
+			int optionSpace= (lineWidth-2*sidesLength)/2;
 			displayCenterAlignedText(menu.get(0), lineWidth);
 
+			int totalOptions =  menu.size();
 			// Display the rest of the menu options
-			for (int i = 1; i < menu.size(); i++) {
-				System.out.printf("| %s %-" + (lineWidth - 2) + "s\n", "*".repeat(lineWidth / 4),
-						(i) + ". " + menu.get(i));
+			for (int i = 1; i <totalOptions; i++) {
+
+				String firstOption= (i) + ". " + menu.get(i++);
+				String secondOption= "";
+				if(i != totalOptions) secondOption= (i) + ". " + menu.get(i);
+
+				System.out.printf("| %-"+ (sidesLength) +"s %-" + optionSpace + "s%-"+optionSpace+"s | %-"+ (sidesLength) +"s\n"
+						,"| "
+						,firstOption
+						,secondOption
+						,"| ");
 			}
 
 			displayCenterAlignedText("0. Go back", lineWidth);
@@ -171,6 +181,7 @@ public class Main {
 				subMenu.add("Edit Patient Details");
 				subMenu.add("Admit Patient To Ward");
 				subMenu.add("Checkout Patient From Ward");
+				subMenu.add("Get Ward Details");
 				subMenu.add("Create Appointment");
 				subMenu.add("Mark Appointnment As Done");
 				subMenu.add("Check Doctor's Availability");
@@ -401,7 +412,8 @@ public class Main {
 	public static void editDoctor(int index) {
 
 		String[] doctorDetails = doctorsList.get(index);
-		System.out.println("Current Details of Doctor '" + index + "': " + Arrays.toString(doctorDetails));
+		System.out.println("Current Details of Doctor '" + index + "': ");
+		headingsDisplayer("Doctor", doctorDetails);
 
 		System.out.println("\nSelect the option to edit:");
 		System.out.println("1. Edit Doctor Name");
@@ -448,12 +460,11 @@ public class Main {
 				System.out.println("Invalid edit choice. No changes made.");
 		}
 		updateDatabaseFileThread(doctorDataFilePath, doctorsList);
-		System.out
-				.println("Details of Doctor '" + doctorDetails[0] + "' after edit: " + Arrays.toString(doctorDetails));
+		System.out.println("Details of Doctor '" + doctorDetails[0] + "' after edit: ");
+		headingsDisplayer("Doctor", doctorDetails);
 	}
 
-	public static int getEntityIndexByIDNameSelection(String operationToPerform, String entity,
-			ArrayList<String[]> list) {
+	public static int getEntityIndexByIDNameSelection(String operationToPerform, String entity,ArrayList<String[]> list) {
 		int option = getNameIDSelection(operationToPerform, entity);
 
 		int index = -1;
@@ -481,7 +492,8 @@ public class Main {
 
 	public static void showDoctorDetails(int index) {
 		String[] doctorDetails = doctorsList.get(index);
-		System.out.println("Details of Doctor '" + doctorDetails[1] + "': " + Arrays.toString(doctorDetails));
+		System.out.println("Details of Doctor '" + doctorDetails[1] + "': ");
+		headingsDisplayer("Doctor", doctorDetails);
 	}
 
 	public static void handleRemoveDoctor() {
@@ -580,7 +592,8 @@ public class Main {
 
 		String[] receptionistsListDetails = receptionistsList.get(index);
 		System.out.println(
-				"Current Details of Receptionist '" + index + "': " + Arrays.toString(receptionistsListDetails));
+				"Current Details of Receptionist '" + index + "': ");
+		headingsDisplayer("Receptionist", receptionistsListDetails);
 
 		System.out.println("\nSelect the option to edit:");
 		System.out.println("1. Edit Receptionist Name");
@@ -621,8 +634,8 @@ public class Main {
 				System.out.println("Invalid edit choice. No changes made.");
 		}
 		updateDatabaseFileThread(receptionistDataFilePath, receptionistsList);
-		System.out.println("Details of Doctor '" + receptionistsListDetails[0] + "' after edit: "
-				+ Arrays.toString(receptionistsListDetails));
+		System.out.println("Details of Receptionist '" + receptionistsListDetails[0] + "' after edit: ");
+		headingsDisplayer("Receptionist", receptionistsListDetails);
 	}
 
 	public static void displayAllReceptionists() {
@@ -684,7 +697,9 @@ public class Main {
 
 	public static void editWard(int index) {
 		String[] wardDetails = wardsList.get(index);
-		System.out.println("Current Details of Ward '" + wardDetails[0] + "': " + Arrays.toString(wardDetails));
+		System.out.println("Current Details of Ward '" + wardDetails[0] + "': ");
+		headingsDisplayer("Ward", wardDetails);
+
 
 		System.out.println("\nSelect the option to edit:");
 		System.out.println("1. Edit Ward Name");
@@ -724,7 +739,8 @@ public class Main {
 				System.out.println("Invalid edit choice. No changes made.");
 		}
 		updateDatabaseFileThread(wardDataFilePath, wardsList);
-		System.out.println("Details of Ward '" + wardDetails[0] + "' after edit: " + Arrays.toString(wardDetails));
+		System.out.println("Details of Ward '" + wardDetails[0] + "' after edit: ");
+		headingsDisplayer("Ward", wardDetails);
 
 	}
 
@@ -762,7 +778,9 @@ public class Main {
 
 	public static void showWardDetails(int index) {
 		String[] wardDetails = wardsList.get(index);
-		System.out.println("Details of Ward '" + wardDetails[1] + "': " + Arrays.toString(wardDetails));
+
+		headingsDisplayer("Ward", wardDetails);
+		getWardPatients(wardDetails[0]);
 	}
 
 	// ----------------------------------------------------------------------------------------------------------------//
@@ -800,7 +818,7 @@ public class Main {
 			String[] appointmentDetails = appointmentsList.get(i);
 			String appointmentPatientID = appointmentDetails[appointmentIDIndex];
 			if (patientID.equals(appointmentPatientID))
-				System.out.println(Arrays.toString(appointmentDetails));
+				headingsDisplayer("Appointment", appointmentDetails);
 		}
 
 		// Now searching for matching diagnosis for the patient by using ID
@@ -809,7 +827,7 @@ public class Main {
 			String[] diagnosisDetails = diagnosisList.get(i);
 			String diagnosisPatientID = diagnosisDetails[diagnosisIDIndex];
 			if (patientID.equals(diagnosisPatientID))
-				System.out.println(Arrays.toString(diagnosisDetails));
+				headingsDisplayer("Diagnosis", diagnosisDetails);
 		}
 	}
 
@@ -846,7 +864,7 @@ public class Main {
 			String appointmentStatus = appointmentListDetail[5];
 			String docID = doctorsList.get(loggedInDoctorIndex)[0];
 			if (docID.equals(appointmentListDoctorID) && appointmentStatus.equals("Pending")) {
-				System.out.println(Arrays.toString(appointmentListDetail));
+				headingsDisplayer("Appointment", appointmentListDetail);
 			}
 		}
 	}
@@ -894,7 +912,8 @@ public class Main {
 
 	private static void getPatientDetails(int index) {
 		String[] patientDetails = patientsList.get(index);
-		System.out.println("Details of Patient '" + patientDetails[1] + "': " + Arrays.toString(patientDetails));
+		System.out.println("Details of Patient '" + patientDetails[1] + "': ");
+		headingsDisplayer("Patient", patientDetails);
 	}
 
 	public static void handleEditPatientDetailsMenu() {
@@ -905,7 +924,8 @@ public class Main {
 
 	public static void editPatient(int index) {
 		String[] patientDetails = patientsList.get(index);
-		System.out.println("Current Details of Patient '" + index + "': " + Arrays.toString(patientDetails));
+		System.out.println("Current Details of Patient '" + index + "': ");
+		headingsDisplayer("Patient", patientDetails);
 
 		System.out.println("\nSelect the option to edit:");
 		System.out.println("1. Edit Patient Name");
@@ -952,13 +972,16 @@ public class Main {
 				System.out.println("Invalid edit choice. No changes made.");
 		}
 		updateDatabaseFileThread(patientDataFilePath, patientsList);
-		System.out.println(
-				"Details of Patient '" + patientDetails[0] + "' after edit: " + Arrays.toString(patientDetails));
+		System.out.println("Details of Patient '" + patientDetails[0] + "' after edit: ");
+		headingsDisplayer("Patient", patientDetails);
 	}
 
 	public static void handleAdmitPatientToWard() {
-		int patientIndex = getEntityIndexByIDNameSelection("Submit", "Patient", patientsList);
-		int wardIndex = getEntityIndexByIDNameSelection("Submit", "Ward", wardsList);
+		int patientIndex = getEntityIndexByIDNameSelection("Admit", "Patient", patientsList);
+		if(patientIndex == -1) return;
+		int wardIndex = getEntityIndexByIDNameSelection("Admit", "Ward", wardsList);
+		if(wardIndex ==-1) return;
+
 		if (patientIndex != -1 && wardIndex != -1)
 			admitPatientToWard(patientIndex, wardIndex);
 	}
@@ -978,8 +1001,7 @@ public class Main {
 		if (occupiedBeds + 1 > totalBeds) {
 			System.out.printf("The ward %s is out of beds , cannot add more patients in it....\n", ward[0]);
 		} else {
-			String[] newSubmission = { generateID("Submission"), patientID, wardID, timeNow.toString(),
-					LocalTime.MAX.toString(), };
+			String[] newSubmission = { generateID("Submission"), patientID, wardID, timeNow.toString(), LocalTime.MAX.toString(),"","Submitted" };
 
 			wardPatientSubmissionList.add(newSubmission);
 			updateDatabaseFileThread(wardSubmissionsDataFilePath, wardPatientSubmissionList);
@@ -1004,7 +1026,9 @@ public class Main {
 
 	public static void handleCreateAppointment() {
 		int doctorIndex = getEntityIndexByIDNameSelection("Select", "Doctor", doctorsList);
+		if (doctorIndex==-1) return;
 		int patientIndex = getEntityIndexByIDNameSelection("Select", "Patient", patientsList);
+		if(patientIndex==-1) return;
 		String[] doctor = doctorsList.get(doctorIndex);
 		String[] patient = patientsList.get(patientIndex);
 		String docID = doctor[0];
@@ -1016,8 +1040,7 @@ public class Main {
 			appointmentTime = scanner.nextLine();
 		} while (!verifyTimeInput(appointmentTime));
 
-		appointmentTime = LocalTime.parse(appointmentTime, DateTimeFormatter.ofPattern("hh:mm a", Locale.US))
-				.toString();
+		appointmentTime = LocalTime.parse(appointmentTime, DateTimeFormatter.ofPattern("hh:mm a", Locale.US)).toString();
 
 		String appointmentDate;
 		do {
@@ -1044,9 +1067,9 @@ public class Main {
 		if (index != -1) {
 			appointment = appointmentsList.get(index);
 			appointment[5] = "Completed";
+			updateDatabaseFileThread(appointmentsDataFilePath, appointmentsList);
+			System.out.println("The Appointment " + appointment[0] + " is marked as completed");
 		}
-		updateDatabaseFileThread(appointmentsDataFilePath, appointmentsList);
-		System.out.println("The Appointment " + appointment[0] + " is marked as completed");
 	}
 
 	public static void handlecheckDoctorsAvailability() {
@@ -1089,6 +1112,7 @@ public class Main {
 				reason = scanner.nextLine();
 				submissionListData[6] = reason;
 				submissionListData[5] = "Checked Out";
+				updateDatabaseFileThread(wardSubmissionsDataFilePath, wardPatientSubmissionList);
 			} else
 				System.out.println("Patient has been Checked Out Already or Patient does not exist");
 		}
@@ -1130,8 +1154,7 @@ public class Main {
 				return timeToCheck.isAfter(start) && timeToCheck.isBefore(end);
 			}
 		} catch (DateTimeParseException e) {
-			System.out.println(
-					"Something went wrong!, Please make sure the files are not damaaged. Delete the gobalvariablesarray File if the error persists.");
+			System.out.println("Something went wrong!, Please make sure the files are not damaaged. Delete the gobalvariablesarray File if the error persists.");
 			return false;
 		}
 
@@ -1185,6 +1208,7 @@ public class Main {
 			entityID = entityID.split("-")[1];
 		}
 		int idInteger = Integer.parseInt(entityID);
+
 		int index = getEntityIndex(entityName, idInteger, list);
 		if (index != -1)
 			return index;
@@ -1202,8 +1226,7 @@ public class Main {
 		boolean isFormatted = parts[0].toUpperCase().equals(getEntityIDPrefix(entityName))
 				&& parts[1].chars().allMatch(Character::isDigit);
 		if (!isFormatted)
-			System.out.println("The ID formate is invalid, It should be a number or should have "
-					+ getEntityIDPrefix(entityName) + "097 formate");
+			System.out.println("The ID formate is invalid, It should be a number or should have "+ getEntityIDPrefix(entityName) + "097 formate");
 		return isFormatted;
 	}
 
@@ -1366,11 +1389,11 @@ public class Main {
 
 		switch (role) {
 			case 1:
-				return checkLoginDetailsForAdmin(username, password);
+				return checkLoginDetailsForAdmin(username.trim(), password.trim());
 			case 2:
-				return checkLoginDetailsForDoctor(username, password);
+				return checkLoginDetailsForDoctor(username.trim(), password.trim());
 			case 3:
-				return checkLoginDetailsForReceptionist(username, password);
+				return checkLoginDetailsForReceptionist(username.trim(), password.trim());
 			default:
 				System.out.println("Something Wrong Happened");
 		}
@@ -1449,15 +1472,17 @@ public class Main {
 	public static boolean entityExist(String username, int role) {
 		if (role == 2) {
 			for (String[] docInfo : doctorsList) {
-				if (username.equals(docInfo[docUsernameIndex]))
+				if (username.equals(docInfo[docUsernameIndex])){
 					System.out.println("The username" + username + " already exist. Enter another.");
-				return true;
+					return true;
+				}
 			}
 		} else if (role == 3) {
 			for (String[] recepInfo : receptionistsList) {
-				if (username.equals(recepInfo[receptionistUsernameIndex]))
+				if (username.equals(recepInfo[receptionistUsernameIndex])){
 					System.out.println("The username" + username + " already exist. Enter another.");
-				return true;
+					return true;
+				}
 			}
 		}
 
