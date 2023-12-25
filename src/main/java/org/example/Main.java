@@ -335,7 +335,7 @@ public class Main
 	}
 	public static boolean verifyGenderInput(String gender)
 	{
-		if(gender.toLowerCase().equals( "male" )||gender.toLowerCase().equals( "female" ) || gender.toLowerCase().equals( "other" ) ){
+		if((gender.trim().toLowerCase().equals( "male" ))||(gender.trim().toLowerCase().equals( "female" ) )|| (gender.trim().toLowerCase().equals( "other" )) ){
 			return  true;
 		}
 		System.out.println("Invalid entry, male/female/other are allowed");
@@ -394,16 +394,7 @@ public class Main
 		if (password.trim().equals( "-1" )) return;
 
 		// Creating a new array to store doctor details
-		String[] newDoctor = {
-				generateID( "Doctor" ),
-				name,
-				timingStart,
-				timingEnd,
-				ward,
-				specialty,
-				username,
-				password,
-		};
+		String[] newDoctor = { generateID( "Doctor" ), name, timingStart, timingEnd, ward, specialty, username, password, };
 
 		doctorsList.add( newDoctor );
 
@@ -545,11 +536,7 @@ public class Main
 	private static void handleDisplayAllDoctors()
 	{
 		System.out.println( "\nList of Doctors:" );
-		System.out.printf( "%-10s %-20s %-15s %-15s %-20s %-20s %-15s\n", "Doctor ID", "Doctor Name", "Start Time",
-				"End Time",
-				"Ward",
-				"Specialty",
-				"Appointments Count" );
+		System.out.printf( "%-10s %-20s %-15s %-15s %-20s %-20s %-15s\n", "Doctor ID", "Doctor Name", "Start Time","End Time","Ward","Specialty","Appointments Count" );
 
 		for (String[] doctor : doctorsList)
 		{
@@ -563,15 +550,7 @@ public class Main
 			// Count the number of appointments made by each doctor
 			long appointmentsCount = countAppointmentsForDoctor( doctorId );
 
-			System.out.printf(
-					"%-10s %-20s %-15s %-15s %-20s %-20s %-15s\n",
-					doctorId,
-					doctorName,
-					startTime,
-					endTime,
-					ward,
-					specialty,
-					appointmentsCount );
+			System.out.printf("%-10s %-20s %-15s %-15s %-20s %-20s %-15s\n",doctorId,doctorName,startTime,endTime,ward,specialty,appointmentsCount );
 		}
 	}
 
@@ -600,12 +579,7 @@ public class Main
 
 
 		// Creating a new array to store receptionist details
-		String[] newReceptionist = {
-				generateID( "Receptionist" ),
-				name,
-				username,
-				password,
-		};
+		String[] newReceptionist = { generateID( "Receptionist" ), name, username, password, };
 
 		receptionistsList.add( newReceptionist );
 
@@ -728,13 +702,7 @@ public class Main
 		String wardType = scanner.nextLine();
 
 		// Creating a new array to store doctor details
-		String[] newWard = {
-				generateID( "Ward" ),
-				name,
-				totalBeds,
-				bedsOccupied,
-				wardType,
-		};
+		String[] newWard = {generateID( "Ward" ),name,totalBeds,bedsOccupied,wardType, };
 
 		wardsList.add( newWard );
 
@@ -802,8 +770,7 @@ public class Main
 	private static void displayAllWards()
 	{
 		System.out.println( "\nList of Wards:" );
-		System.out.printf( "%-10s %-20s %-15s %-15s\n", "Ward ID", "Ward Name",
-				"Total Beds", "Occupied Beds" );
+		System.out.printf( "%-10s %-20s %-15s %-15s\n", "Ward ID", "Ward Name","Total Beds", "Occupied Beds" );
 
 		for (String[] ward : wardsList)
 		{
@@ -812,12 +779,7 @@ public class Main
 			String totalBeds = ward[2];
 			String occupiedBed = ward[3];
 
-			System.out.printf(
-					"%-10s %-20s %-15s %-15s\n",
-					wardId,
-					wardName,
-					totalBeds,
-					occupiedBed );
+			System.out.printf("%-10s %-20s %-15s %-15s\n",wardId,wardName,totalBeds,occupiedBed );
 		}
 	}
 
@@ -956,7 +918,7 @@ public class Main
 			System.out.print( "Enter patient gender: " );
 			gender = scanner.nextLine();
 			if (gender.trim().equals( "-1" )) return;
-		}while(verifyGenderInput(gender));
+		}while(!verifyGenderInput(gender));
 
 
 		System.out.print( "Enter patient age: " );
@@ -968,17 +930,10 @@ public class Main
 		if (contact.trim().equals( "-1" )) return;
 
 		// Creating a new array to store patient details
-		String[] newPatient = {
-				generateID( "Patient" ),
-				name,
-				gender,
-				age,
-				contact
-		};
+		String[] newPatient = {generateID( "Patient" ),name,gender,age,contact };
 
 		patientsList.add( newPatient );
 
-		// Adding the patient to the file data
 
 		updateDatabaseFileThread( patientDataFilePath, patientsList );
 		System.out.println( "New patient added successfully." );
@@ -1586,14 +1541,14 @@ public class Main
 
 	public static boolean entityExist(String username, int role)
 	{
-		if (role == 1)
+		if (role == 2)
 		{
 			for (String[] docInfo : doctorsList)
 			{
 				if (username.equals( docInfo[docUsernameIndex] )) return true;
 			}
 		}
-		else if (role == 2)
+		else if (role == 3)
 		{
 			for (String[] recepInfo : receptionistsList)
 			{
@@ -1788,6 +1743,8 @@ How is the handling of global variables like number of entites and admin passwor
 	{
 		Runnable r2 = () ->
 		{
+			updateSystemVariablesFile();
+
 			try
 			{
 				FileWriter docFWriter = new FileWriter( filePath, false );
@@ -1852,16 +1809,15 @@ How is the handling of global variables like number of entites and admin passwor
 
 	public static String encrpytString(String str)
 	{
-		String strip = "[192 .168 ,.1.11]";
-		String encstr = "192.168.1.11";
-		byte[] encryptArray = Base64.getEncoder().encode( strip.getBytes() );
+		String encstr = "jUST cHILiN";
+		byte[] encryptArray = Base64.getEncoder().encode( str.getBytes() );
 		try
 		{
 			encstr = new String( encryptArray, StandardCharsets.UTF_8 );
 		}
 		catch (Exception o)
 		{
-
+			System.out.println("Something wrong with data, please make sure its not curroputed");
 		}
 		return encstr;
 
@@ -1879,7 +1835,7 @@ How is the handling of global variables like number of entites and admin passwor
 		}
 		catch (Exception o)
 		{
-
+			System.out.println("Something went wrong , make sure data is not tempered.");
 		}
 		return decstr;
 
