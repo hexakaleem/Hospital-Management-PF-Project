@@ -1373,10 +1373,8 @@ public class Main
 		String appointmentIdDiagnosis = arrayOfEntity[5];
 
 		System.out.println("\nList of Diagnoses:");
-		System.out.printf("%-15s %-15s %-15s %-20s %-20s %-15s\n", "Diagnosis ID", "Patient ID", "Doctor ID",
-				"Prescriptions", "Diagnosis", "Appointment ID");
-		System.out.printf("%-15s %-15s %-15s %-20s %-20s %-15s\n", diagnosisId, patientIdDiagnosis,
-				doctorIdDiagnosis, prescriptions, diagnosis, appointmentIdDiagnosis);
+		System.out.printf("%-15s %-15s %-15s %-20s %-20s %-15s\n", "Diagnosis ID", "Patient ID", "Doctor ID", "Prescriptions", "Diagnosis", "Appointment ID");
+		System.out.printf("%-15s %-15s %-15s %-20s %-20s %-15s\n", diagnosisId, patientIdDiagnosis, doctorIdDiagnosis, prescriptions, diagnosis, appointmentIdDiagnosis);
 	}
 
 	private static void processAppointmentDisplay(String[] arrayOfEntity) {
