@@ -1,2 +1,0 @@
-[APT-001, P-063, Doctor ID, Time Start, Time End]
-[APT-002, P-064, Doctor ID, Time Start, Time End]
