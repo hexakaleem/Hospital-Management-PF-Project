@@ -39,7 +39,7 @@ public class Main {
 	static ArrayList<String[]> diagnosisList = new ArrayList<>();
 	// ['Appointment ID', 'Patient ID' , 'Doctor ID','Time Start','Date','Status']
 	static ArrayList<String[]> appointmentsList = new ArrayList<>();
-	// ['Submission ID', 'Patient ID' , 'Ward ID','Time Start','Time End','Reason','Status (Pending/Checked Out)']
+	// ['Submission ID', 'Patient ID' , 'Ward ID','Date Start','Date End','Reason','Status (Pending/Checked Out)']
 	static ArrayList<String[]> wardPatientSubmissionList = new ArrayList<>();
 	static File doctorDataFilePath = new File(DOCTORS_FILE_NAME);
 	static File receptionistDataFilePath = new File(RECEPTIONISTS_FILE_NAME);
@@ -997,13 +997,13 @@ public class Main {
 		// ['Submission ID', 'Patient ID' , 'Ward ID','Time Start','Time End','Status']
 		int occupiedBeds = Integer.parseInt(ward[3]);
 		int totalBeds = Integer.parseInt(ward[2]);
-		LocalTime timeNow = LocalTime.now(ZoneId.of("Asia/Karachi"));
+		LocalDate dateToday = LocalDate.now(ZoneId.of("Asia/Karachi"));
 
 		if (occupiedBeds + 1 > totalBeds) {
 			System.out.printf("The ward %s is out of beds , cannot add more patients in it....\n", ward[0]);
 		} else {
-			String[] newSubmission = { generateID("Submission"), patientID, wardID, timeNow.toString(), LocalTime.MAX.toString(),"","Submitted" };
-			ward[3] = String.valueOf( occupiedBeds+1 );
+			String[] newSubmission = { generateID("Submission"), patientID, wardID, dateToday.toString(), LocalDate.MAX.toString(),"","Submitted" };
+			ward[3] = Integer.toString( occupiedBeds+1 );
 
 			wardPatientSubmissionList.add(newSubmission);
 			updateDatabaseFileThread(wardDataFilePath, wardsList);
@@ -1106,18 +1106,13 @@ public class Main {
 		String[] patient = patientsList.get(index);
 		String patientID = patient[0];
 
-		for( String[] submission: wardPatientSubmissionList){
-			String submissionPatientID= submission[1];
-			String submissionStatus = submission[5];
-
-		}
 		boolean found= false;
-
+		System.out.println((wardPatientSubmissionList.size()));
 		for (int i = 0; i < wardPatientSubmissionList.size(); i++) {
 
 			String[] submission = wardPatientSubmissionList.get(i);
 			String submissionPatientId = submission[1];
-			String submissionStatus = submission[5];
+			String submissionStatus = submission[6];
 			String submissionWardID = submission[2];
 
 
@@ -1125,8 +1120,8 @@ public class Main {
 			if (patientID.equals(submissionPatientId) && submissionStatus.equals("Submitted")) {
 				System.out.println("Enter Reason for Checkout: ");
 				reason = scanner.nextLine();
-				submission[6] = reason;
-				submission[5] = "Checked Out";
+				submission[5] = reason;
+				submission[6] = "Checked Out";
 				found=true;
 				String[] ward= wardsList.get(getEntityIndexByID( submissionWardID, wardsList ));
 				int occupiedBeds = Integer.parseInt( ward[3] );
@@ -1659,6 +1654,7 @@ public class Main {
 		readDataFromFileToArrayList(patientDataFilePath, patientsList);
 		readDataFromFileToArrayList(diagnosisDataFilePath, diagnosisList);
 		readDataFromFileToArrayList(appointmentsDataFilePath, appointmentsList);
+		readDataFromFileToArrayList(wardSubmissionsDataFilePath, wardPatientSubmissionList);
 	}
 
 	public static void updateDatabaseFileThread(File filePath, ArrayList<String[]> dataList) {
