@@ -1,4 +1,4 @@
-package org.example;
+package org.pfcolab;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -35,11 +35,11 @@ public class Main {
 	// ['Patient ID', 'Patient Name' , 'Gender','Age','Contact']
 	static ArrayList<String[]> patientsList = new ArrayList<>();
 	// ['Diagnosis ID', 'Patient ID' ,
-	// 'DoctorID','Prescriptions','Diagnosis','Appointment ID']
+	// 'DoctorID','Prescriptions','Diagnosis']
 	static ArrayList<String[]> diagnosisList = new ArrayList<>();
-	// ['Appointment ID', 'Patient ID' , 'Doctor ID','Time Start','Time End']
+	// ['Appointment ID', 'Patient ID' , 'Doctor ID','Time Start','Date','Status']
 	static ArrayList<String[]> appointmentsList = new ArrayList<>();
-	// ['Submission ID', 'Patient ID' , 'Ward ID','Time Start','Time End']
+	// ['Submission ID', 'Patient ID' , 'Ward ID','Time Start','Time End','Reason','Status (Pending/Checked Out)']
 	static ArrayList<String[]> wardPatientSubmissionList = new ArrayList<>();
 	static File doctorDataFilePath = new File(DOCTORS_FILE_NAME);
 	static File receptionistDataFilePath = new File(RECEPTIONISTS_FILE_NAME);
@@ -75,35 +75,38 @@ public class Main {
 		int totalPadding = lineWidth - text.length();
 		int leftPadding = totalPadding / 2;
 		int rightPadding = totalPadding - leftPadding;
-
+//MaL.e
 		System.out.printf("%s%s%s\n", "=".repeat(leftPadding), text, "=".repeat(rightPadding));
 	}
 
-	public static void navigateMenu(List<String> menu) {
+	public static void displayOptions(ArrayList<String> menu){
+		int lineWidth = 100;
+		int sidesLength= lineWidth/10;
+		int optionSpace= (lineWidth-2*sidesLength)/2;
+		displayCenterAlignedText(menu.get(0), lineWidth);
+
+		int totalOptions =  menu.size();
+		// Display the rest of the menu options
+		for (int i = 1; i <totalOptions; i++) {
+
+			String firstOption= (i) + ". " + menu.get(i++);
+
+			String secondOption= "";
+			if(i != totalOptions) secondOption= (i) + ". " + menu.get(i);
+
+			System.out.printf("| %-"+ (sidesLength) +"s %-" + optionSpace + "s%-"+optionSpace+"s | %-"+ (sidesLength) +"s\n"
+					,"| "
+					,firstOption
+					,secondOption
+					,"| ");
+		}
+		displayCenterAlignedText("0. Go back", lineWidth);
+	}
+	public static void navigateMenu(ArrayList<String> menu) {
 		int choice;
 
 		while (!menu.isEmpty()) {
-			int lineWidth = 100;
-			int sidesLength= lineWidth/10;
-			int optionSpace= (lineWidth-2*sidesLength)/2;
-			displayCenterAlignedText(menu.get(0), lineWidth);
-
-			int totalOptions =  menu.size();
-			// Display the rest of the menu options
-			for (int i = 1; i <totalOptions; i++) {
-
-				String firstOption= (i) + ". " + menu.get(i++);
-				String secondOption= "";
-				if(i != totalOptions) secondOption= (i) + ". " + menu.get(i);
-
-				System.out.printf("| %-"+ (sidesLength) +"s %-" + optionSpace + "s%-"+optionSpace+"s | %-"+ (sidesLength) +"s\n"
-						,"| "
-						,firstOption
-						,secondOption
-						,"| ");
-			}
-
-			displayCenterAlignedText("0. Go back", lineWidth);
+			displayOptions(menu);
 
 			System.out.print("Enter your choice: ");
 			while (!scanner.hasNextInt()) {
@@ -118,10 +121,17 @@ public class Main {
 				System.out.println("Going back to the previous menu...");
 				return;
 			} else if (choice > 0 && choice < menu.size()) {
-				String selectedSubMenu = menu.get(choice);
-				if (handleSubMenu(selectedSubMenu)) {
-					navigateMenu(getSubMenu(selectedSubMenu));
+
+				String selectedOption = menu.get(choice);
+
+				if (callFunction(selectedOption)) {
+
+					ArrayList<String> options = getSubMenu(selectedOption);
+
+					navigateMenu(options);
+
 				}
+
 			} else {
 				System.out.println("Invalid choice. Please try again.");
 			}
@@ -137,8 +147,8 @@ public class Main {
 	 * based upon menu,
 	 * we are making this function
 	 */
-	public static List<String> getSubMenu(String menuName) {
-		List<String> subMenu = new ArrayList<>();
+	public static ArrayList<String> getSubMenu(String menuName) {
+		ArrayList<String> subMenu = new ArrayList<>();
 
 		switch (menuName) {
 			/// For First Screen
@@ -165,7 +175,7 @@ public class Main {
 				subMenu.add("Get Ward Details");
 				subMenu.add("Remove Ward");
 				subMenu.add("Display All Wards");
-				subMenu.add("Fill Database With Fake Data");
+
 				break;
 			// For Doctors Screen
 			case "Doctor's Section":
@@ -192,17 +202,13 @@ public class Main {
 				subMenu.add("Get Patient History");
 				subMenu.add("Add Diagnosis");
 				break;
-			case "Display All Wards":
-				subMenu.add("Display All Wards");
-				subMenu.add("Filter Wards By Name");
-				break;
 
 		}
 		return subMenu;
 	}
 
 	// if there is some Function which is needed tobe called before specific submenu
-	public static boolean handleSubMenu(String subMenu) {
+	public static boolean callFunction(String subMenu) {
 		switch (subMenu) {
 			case "Admin Section":
 				return verifyLoginDetails(1);
@@ -297,14 +303,13 @@ public class Main {
 		return false;
 	}
 
-	// This function will check if the date entered is in the form our system can
-	// process.
+	// This function will check if the date entered is in the form our system can process.
 	public static boolean verifyTimeInput(String time) {
 		try {
 			LocalTime.parse(time, DateTimeFormatter.ofPattern("hh:mm a", Locale.US));
 			return true;
 		} catch (DateTimeParseException e) {
-			System.out.println("The date entered is in incoorect format ,It should be like 06:00 PM");
+			System.out.println("The date entered is in incorrect format ,It should be like 06:00 PM");
 			return false;
 		}
 	}
@@ -322,8 +327,8 @@ public class Main {
 	}
 
 	public static boolean verifyGenderInput(String gender) {
-		if ((gender.trim().toLowerCase().equals("male")) || (gender.trim().toLowerCase().equals("female"))
-				|| (gender.trim().toLowerCase().equals("other"))) {
+		if ((gender.trim().equalsIgnoreCase("male")) || (gender.trim().equalsIgnoreCase("female"))
+				|| (gender.trim().equalsIgnoreCase("other"))) {
 			return true;
 		}
 		System.out.println("Invalid entry, male/female/other are allowed");
@@ -344,7 +349,7 @@ public class Main {
 				return;
 		} while (!verifyTimeInput(timingStart));
 
-		timingStart = LocalTime.parse(timingStart, DateTimeFormatter.ofPattern("hh:mm a", Locale.US)).toString();
+		// timingStart = LocalTime.parse(timingStart, DateTimeFormatter.ofPattern("hh:mm a", Locale.US)).toString();
 
 		String timingEnd;
 		do {
@@ -353,7 +358,8 @@ public class Main {
 			if (timingEnd.trim().equals("-1"))
 				return;
 		} while (!verifyTimeInput(timingEnd));
-		timingEnd = LocalTime.parse(timingEnd, DateTimeFormatter.ofPattern("hh:mm a", Locale.US)).toString();
+
+		//  timingEnd = LocalTime.parse(timingEnd, DateTimeFormatter.ofPattern("hh:mm a", Locale.US)).toString();
 
 		System.out.print("Enter doctor ward(e.g Cardiology): ");
 		String ward = scanner.nextLine();
@@ -389,22 +395,8 @@ public class Main {
 	}
 
 	public static void handleEditDoctorDetailsMenu() {
-		int option = getNameIDSelection("Edit", "Doctor");
+		int index = getEntityIndexByIDNameSelection("Edit","Doctor", doctorsList);
 
-		int index = -1;
-		switch (option) {
-			case 0:
-				return;
-			case 1:
-				index = getEntityIndexByNameInput("Doctor", doctorsList);
-				if (index != -2)
-					break;
-			case 2:
-				index = getEntityIndexByIDInput("Doctor", doctorsList);
-				break;
-			default:
-				System.out.println("Invalid edit option. No changes made.");
-		}
 		if (index != -1)
 			editDoctor(index);
 	}
@@ -435,6 +427,7 @@ public class Main {
 			case 2:
 				System.out.print("Enter new shift start time: ");
 				String newStartTime = scanner.nextLine();
+				//TODO: ADD time vetification
 				doctorDetails[2] = newStartTime;
 				break;
 			case 3:
@@ -459,6 +452,7 @@ public class Main {
 			default:
 				System.out.println("Invalid edit choice. No changes made.");
 		}
+
 		updateDatabaseFileThread(doctorDataFilePath, doctorsList);
 		System.out.println("Details of Doctor '" + doctorDetails[0] + "' after edit: ");
 		headingsDisplayer("Doctor", doctorDetails);
@@ -1223,10 +1217,12 @@ public class Main {
 		String[] parts = enteredID.split("-");
 		if (parts.length > 2)
 			return false;
-		boolean isFormatted = parts[0].toUpperCase().equals(getEntityIDPrefix(entityName))
-				&& parts[1].chars().allMatch(Character::isDigit);
+		String entityPrefix= getEntityIDPrefix(entityName);
+		entityPrefix = entityPrefix.substring( 0,entityPrefix.length()-1 );
+
+		boolean isFormatted = parts[0].equalsIgnoreCase(entityPrefix) && parts[1].chars().allMatch(Character::isDigit);
 		if (!isFormatted)
-			System.out.println("The ID formate is invalid, It should be a number or should have "+ getEntityIDPrefix(entityName) + "097 formate");
+			System.out.println("The ID formate is invalid, It should be a number or should have "+ entityPrefix + "097 format");
 		return isFormatted;
 	}
 
@@ -1539,7 +1535,7 @@ public class Main {
 	/*
 	 * //---------------------------------------------------------------------------
 	 * -----------------------------------------//
-	 * 
+	 *
 	 * How is the handling of global variables like number of entites and admin
 	 * password and username is handled>?
 	 * we have created an array numberOfEntitiesArray of int type
@@ -1553,7 +1549,7 @@ public class Main {
 	 * globalVariablesArray
 	 * set the admin user name and password from frist 2 indices of this array
 	 * rest of the indices are parsed into int and stored into numberOfEntitiesArray
-	 * 
+	 *
 	 */
 
 	public static String generateID(String entityType) {
@@ -1588,43 +1584,34 @@ public class Main {
 	// variables
 	public static void loadSystemVariablesFileIntoMemory() {
 		try {
-			FileReader fileReader = new FileReader(systemVariablesFilePath);
-			Scanner variablesFileScanner = new Scanner(fileReader);
+			Scanner variablesFileScanner = new Scanner(systemVariablesFilePath);
 			int i = 0;
-			while (variablesFileScanner.hasNextLine()) {
-				globalVariablesArray[i++] = variablesFileScanner.nextLine();
+			while (variablesFileScanner.hasNext()) {
+				if(i==0) {adminUsername= variablesFileScanner.nextLine();}
+				else if(i==1) {adminPassword = variablesFileScanner.nextLine();}
+				else{
+					numberOfEntitiesArray[i-2]= Integer.parseInt(variablesFileScanner.nextLine());
+				}
+				++i;
 			}
 			variablesFileScanner.close();
 		} catch (FileNotFoundException e) {
 			System.out.println("Something went wrong: " + e.getMessage());
 		}
-		setGlobalVariablesFromArray();
-	}
 
-	public static void setGlobalVariablesFromArray() {
-		adminUsername = globalVariablesArray[0];
-		adminPassword = globalVariablesArray[1];
-		for (int i = 0; i < numberOfEntitiesArray.length; ++i) {
-			numberOfEntitiesArray[i] = Integer.parseInt(globalVariablesArray[i + 2]);
-		}
-	}
-
-	public static void loadGlobalVariablesIntoArray() {
-		globalVariablesArray[0] = adminUsername;
-		globalVariablesArray[1] = adminPassword;
-		for (int i = 0; i < numberOfEntitiesArray.length; ++i) {
-			globalVariablesArray[i + 2] = Integer.toString(numberOfEntitiesArray[i]);
-		}
 	}
 
 	//
 	public static void updateSystemVariablesFile() {
-		loadGlobalVariablesIntoArray();
 		try {
 			FileOutputStream fos = new FileOutputStream(systemVariablesFilePath, false);
 			PrintStream ps = new PrintStream(fos);
-			for (String s : globalVariablesArray) {
-				ps.println(s);
+			for(int i=0;i<numberOfEntitiesArray.length+2;i++){
+				if(i==0)  ps.println(adminUsername);
+				else if(i==1)  ps.println(adminPassword);
+				else {
+					ps.println(numberOfEntitiesArray[i-2]);
+				}
 			}
 		} catch (FileNotFoundException e) {
 			try {
@@ -1638,6 +1625,7 @@ public class Main {
 	}
 
 	public static void loadDatabaseFilesIntoMemory() {
+		loadSystemVariablesFileIntoMemory();
 		readDataFromFileToArrayList(doctorDataFilePath, doctorsList);
 		readDataFromFileToArrayList(receptionistDataFilePath, receptionistsList);
 		readDataFromFileToArrayList(wardDataFilePath, wardsList);
@@ -1649,7 +1637,6 @@ public class Main {
 	public static void updateDatabaseFileThread(File filePath, ArrayList<String[]> dataList) {
 		Runnable r2 = () -> {
 			updateSystemVariablesFile();
-
 			try {
 				FileWriter docFWriter = new FileWriter(filePath, false);
 				PrintWriter pw = new PrintWriter(docFWriter);
@@ -1670,7 +1657,6 @@ public class Main {
 			try (Scanner reading = new Scanner(file)) {
 				while (reading.hasNextLine()) {
 					String[] data = reading.nextLine().replaceAll("[\\[\\]]", "").split(", ");
-
 					dataList.add(data);
 				}
 			} catch (FileNotFoundException e) {
@@ -1681,7 +1667,8 @@ public class Main {
 
 	// --------------------------------------------------------------------------------------------------------------------//
 
-	public static void InitializeProgramme() {
+	public static void InitializeProgramme()
+	{
 		if (systemVariablesFilePath.exists()) {
 			loadSystemVariablesFileIntoMemory();
 			loadDatabaseFilesIntoMemory();
@@ -1728,6 +1715,7 @@ public class Main {
 		// In this example, the option to go to the main menu is shown only for Submenu
 		// 1
 		navigateMenu(mainMenuOptions);
+
 	}
 
 }
