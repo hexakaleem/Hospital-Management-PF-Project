@@ -425,14 +425,21 @@ public class Main {
 				doctorDetails[1] = newName;
 				break;
 			case 2:
-				System.out.print("Enter new shift start time: ");
-				String newStartTime = scanner.nextLine();
+				String newStartTime;
+				do {
+					System.out.print("Enter doctor`s shift start time (e.g 10:00 AM): ");
+					newStartTime = scanner.nextLine();
+				} while (!verifyTimeInput(newStartTime));
 				//TODO: ADD time vetification
 				doctorDetails[2] = newStartTime;
 				break;
 			case 3:
-				System.out.print("Enter new shift end time: ");
-				String newEndTime = scanner.nextLine();
+				String newEndTime;
+				do {
+					System.out.print("Enter doctor`s shift start time (e.g 10:00 AM): ");
+					newEndTime = scanner.nextLine();
+				} while (!verifyTimeInput(newEndTime));
+
 				doctorDetails[3] = newEndTime;
 				break;
 			case 4:
