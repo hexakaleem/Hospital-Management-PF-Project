@@ -430,7 +430,7 @@ public class Main {
 					System.out.print("Enter doctor`s shift start time (e.g 10:00 AM): ");
 					newStartTime = scanner.nextLine();
 				} while (!verifyTimeInput(newStartTime));
-				//TODO: ADD time vetification
+
 				doctorDetails[2] = newStartTime;
 				break;
 			case 3:
@@ -1003,8 +1003,10 @@ public class Main {
 			System.out.printf("The ward %s is out of beds , cannot add more patients in it....\n", ward[0]);
 		} else {
 			String[] newSubmission = { generateID("Submission"), patientID, wardID, timeNow.toString(), LocalTime.MAX.toString(),"","Submitted" };
+			ward[3] = String.valueOf( occupiedBeds+1 );
 
 			wardPatientSubmissionList.add(newSubmission);
+			updateDatabaseFileThread(wardDataFilePath, wardsList);
 			updateDatabaseFileThread(wardSubmissionsDataFilePath, wardPatientSubmissionList);
 			System.out.println();
 			getWardPatients(newSubmission[2]);
