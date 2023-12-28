@@ -1105,20 +1105,38 @@ public class Main {
 		// 'Reason']
 		String[] patient = patientsList.get(index);
 		String patientID = patient[0];
+
+		for( String[] submission: wardPatientSubmissionList){
+			String submissionPatientID= submission[1];
+			String submissionStatus = submission[5];
+
+		}
+		boolean found= false;
+
 		for (int i = 0; i < wardPatientSubmissionList.size(); i++) {
-			String[] submissionListData = wardPatientSubmissionList.get(i);
-			String submissionListPatientId = submissionListData[1];
-			String oldStatus = submissionListData[5];
+
+			String[] submission = wardPatientSubmissionList.get(i);
+			String submissionPatientId = submission[1];
+			String submissionStatus = submission[5];
+			String submissionWardID = submission[2];
+
+
 			String reason = "";
-			if (patientID.equals(submissionListPatientId) && oldStatus.equals("Submitted")) {
+			if (patientID.equals(submissionPatientId) && submissionStatus.equals("Submitted")) {
 				System.out.println("Enter Reason for Checkout: ");
 				reason = scanner.nextLine();
-				submissionListData[6] = reason;
-				submissionListData[5] = "Checked Out";
+				submission[6] = reason;
+				submission[5] = "Checked Out";
+				found=true;
+				String[] ward= wardsList.get(getEntityIndexByID( submissionWardID, wardsList ));
+				int occupiedBeds = Integer.parseInt( ward[3] );
+				ward[3] = Integer.toString( occupiedBeds-1 );
+
 				updateDatabaseFileThread(wardSubmissionsDataFilePath, wardPatientSubmissionList);
-			} else
-				System.out.println("Patient has been Checked Out Already or Patient does not exist");
+				updateDatabaseFileThread(wardDataFilePath, wardsList);
+			}
 		}
+		if(!found) System.out.println("The patient is not submitted or already checcked out....");
 
 	}
 
